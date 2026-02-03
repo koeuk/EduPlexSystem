@@ -111,6 +111,15 @@ class CertificateController extends Controller
         }
     }
 
+    public function show(Certificate $certificate): Response
+    {
+        $certificate->load(['student.user', 'course']);
+
+        return Inertia::render('Admin/Certificates/Show', [
+            'certificate' => $certificate,
+        ]);
+    }
+
     public function destroy(Certificate $certificate)
     {
         DB::beginTransaction();

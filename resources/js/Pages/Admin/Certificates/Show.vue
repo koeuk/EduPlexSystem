@@ -5,10 +5,10 @@ import Badge from '@/Components/Badge.vue'
 import { ArrowLeft, Award, User, BookOpen, Calendar, Download, XCircle } from 'lucide-vue-next'
 
 const props = defineProps({
-    item: Object,
+    certificate: Object,
 })
 
-const certificate = props.item
+const certificate = props.certificate
 
 const formatDate = (date) => {
     if (!date) return '-'
@@ -17,7 +17,7 @@ const formatDate = (date) => {
 
 const revokeCertificate = () => {
     if (confirm('Are you sure you want to revoke this certificate?')) {
-        router.post(`/admin/certificates/${props.certificate.id}/revoke`)
+        router.delete(`/admin/certificates/${certificate.id}`)
     }
 }
 </script>

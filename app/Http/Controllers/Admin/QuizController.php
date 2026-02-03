@@ -74,6 +74,17 @@ class QuizController extends Controller
         }
     }
 
+    public function show(Quiz $quiz): Response
+    {
+        $quiz->load(['questions.options']);
+        $quiz->loadCount(['questions', 'attempts']);
+
+        return Inertia::render('Admin/Quizzes/Show', [
+            'item' => $quiz,
+            'questions' => $quiz->questions,
+        ]);
+    }
+
     public function edit(Quiz $quiz): Response
     {
         $quiz->loadCount(['questions', 'attempts']);
