@@ -19,6 +19,7 @@ const menuItems = [
     { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
     { name: 'Admins', href: '/admin/admins', icon: Users },
     { name: 'Students', href: '/admin/students', icon: GraduationCap },
+    { name: 'Lessons', href: '/courses/admin/lessons', icon: FolderOpen },
     { name: 'Categories', href: '/admin/categories', icon: FolderOpen },
     { name: 'Courses', href: '/admin/courses', icon: BookOpen },
     { name: 'Quizzes', href: '/admin/quizzes', icon: HelpCircle },

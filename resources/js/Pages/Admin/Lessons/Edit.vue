@@ -18,14 +18,14 @@ const lesson = props.item
 const form = useForm({
     lesson_title: lesson.lesson_title,
     module_id: lesson.module_id || '',
-    lesson_type: lesson.lesson_type || 'video',
+    lesson_type: lesson.lesson_type || 'text',
     description: lesson.description || '',
     content: lesson.content || '',
-    video_url: lesson.video_url || '',
     video_duration: lesson.video_duration || '',
     quiz_id: lesson.quiz_id || '',
-    is_mandatory: lesson.is_mandatory ?? true,
+    is_mandatory: lesson.is_mandatory ?? false,
     duration_minutes: lesson.duration_minutes || '',
+    video: null,
     video_thumbnail: null,
 })
 
@@ -34,14 +34,16 @@ const boolOptions = [
     { value: false, label: 'No' },
 ]
 
-const handleFileChange = (e) => {
-    form.video_thumbnail = e.target.files[0]
+const handleVideoChange = (e) => {
+    form.video = e.target.files[0] || null
+}
+
+const handleThumbnailChange = (e) => {
+    form.video_thumbnail = e.target.files[0] || null
 }
 
 const submit = () => {
-    form.post(`/admin/courses/${props.course.id}/lessons/${lesson.id}`, {
-        _method: 'PUT',
-    })
+    form.put(`/admin/courses/${props.course.id}/lessons/${lesson.id}`)
 }
 </script>
 
@@ -119,23 +121,38 @@ const submit = () => {
                 <div v-if="form.lesson_type === 'video'" class="card p-6 space-y-6">
                     <h2 class="text-lg font-semibold">Video Content</h2>
 
-                    <FormInput
-                        v-model="form.video_url"
-                        label="Video URL"
-                        placeholder="https://..."
-                        :error="form.errors.video_url"
-                    />
+                    <div v-if="lesson.video_url" class="mb-4">
+                        <p class="text-sm text-gray-500 mb-2">Current video:</p>
+                        <a :href="lesson.video_url" target="_blank" rel="noopener" class="text-primary-600 hover:underline">
+                            View current video
+                        </a>
+                    </div>
+
+                    <div>
+                        <label class="label block mb-1.5">Replace Video File</label>
+                        <input
+                            type="file"
+                            accept="video/mp4,video/webm,video/ogg"
+                            @change="handleVideoChange"
+                            class="input"
+                        />
+                        <p class="mt-1 text-sm text-gray-500">MP4, WebM or OGG. Max 500MB. Leave empty to keep current.</p>
+                        <p v-if="form.errors.video" class="mt-1 text-sm text-red-500">
+                            {{ form.errors.video }}
+                        </p>
+                    </div>
 
                     <FormInput
                         v-model="form.video_duration"
                         label="Video Duration (seconds)"
                         type="number"
+                        min="0"
                         :error="form.errors.video_duration"
                     />
 
-                    <div v-if="lesson.video_thumbnail" class="mb-4">
+                    <div v-if="lesson.video_thumbnail_url" class="mb-4">
                         <p class="text-sm text-gray-500 mb-2">Current thumbnail:</p>
-                        <img :src="`/storage/${lesson.video_thumbnail}`" :alt="lesson.lesson_title"
+                        <img :src="lesson.video_thumbnail_url" :alt="lesson.lesson_title"
                             class="w-48 h-32 object-cover rounded" />
                     </div>
 
@@ -144,7 +161,7 @@ const submit = () => {
                         <input
                             type="file"
                             accept="image/*"
-                            @change="handleFileChange"
+                            @change="handleThumbnailChange"
                             class="input"
                         />
                         <p v-if="form.errors.video_thumbnail" class="mt-1 text-sm text-red-500">

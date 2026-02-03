@@ -15,14 +15,14 @@ const props = defineProps({
 const form = useForm({
     lesson_title: '',
     module_id: '',
-    lesson_type: 'video',
+    lesson_type: 'text',
     description: '',
     content: '',
-    video_url: '',
     video_duration: '',
     quiz_id: '',
-    is_mandatory: true,
+    is_mandatory: false,
     duration_minutes: '',
+    video: null,
     video_thumbnail: null,
 })
 
@@ -31,8 +31,12 @@ const boolOptions = [
     { value: false, label: 'No' },
 ]
 
-const handleFileChange = (e) => {
-    form.video_thumbnail = e.target.files[0]
+const handleVideoChange = (e) => {
+    form.video = e.target.files[0] || null
+}
+
+const handleThumbnailChange = (e) => {
+    form.video_thumbnail = e.target.files[0] || null
 }
 
 const submit = () => {
@@ -114,17 +118,25 @@ const submit = () => {
                 <div v-if="form.lesson_type === 'video'" class="card p-6 space-y-6">
                     <h2 class="text-lg font-semibold">Video Content</h2>
 
-                    <FormInput
-                        v-model="form.video_url"
-                        label="Video URL"
-                        placeholder="https://..."
-                        :error="form.errors.video_url"
-                    />
+                    <div>
+                        <label class="label block mb-1.5">Video File</label>
+                        <input
+                            type="file"
+                            accept="video/mp4,video/webm,video/ogg"
+                            @change="handleVideoChange"
+                            class="input"
+                        />
+                        <p class="mt-1 text-sm text-gray-500">MP4, WebM or OGG. Max 500MB.</p>
+                        <p v-if="form.errors.video" class="mt-1 text-sm text-red-500">
+                            {{ form.errors.video }}
+                        </p>
+                    </div>
 
                     <FormInput
                         v-model="form.video_duration"
                         label="Video Duration (seconds)"
                         type="number"
+                        min="0"
                         :error="form.errors.video_duration"
                     />
 
@@ -133,7 +145,7 @@ const submit = () => {
                         <input
                             type="file"
                             accept="image/*"
-                            @change="handleFileChange"
+                            @change="handleThumbnailChange"
                             class="input"
                         />
                         <p v-if="form.errors.video_thumbnail" class="mt-1 text-sm text-red-500">
