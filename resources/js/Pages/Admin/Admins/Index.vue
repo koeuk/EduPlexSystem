@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue'
-import { Link, router } from '@inertiajs/vue3'
+import { Head, Link, router } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import DataTable from '@/Components/DataTable.vue'
 import Badge from '@/Components/Badge.vue'
@@ -8,9 +8,11 @@ import ConfirmModal from '@/Components/ConfirmModal.vue'
 import { Plus, Pencil, Trash2, Search } from 'lucide-vue-next'
 
 const props = defineProps({
-    admins: Object,
+    items: Object,
     filters: Object,
 })
+
+const admins = props.items
 
 const search = ref(props.filters?.search || '')
 const status = ref(props.filters?.status || '')
@@ -99,7 +101,7 @@ const getStatusVariant = (status) => {
             </div>
 
             <!-- Table -->
-            <DataTable :columns="columns" :data="admins.data" :pagination="admins">
+            <DataTable :columns="columns" :data="admins?.data || []" :pagination="admins">
                 <template #user.status="{ value }">
                     <Badge :variant="getStatusVariant(value)">{{ value }}</Badge>
                 </template>

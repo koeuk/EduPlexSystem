@@ -1,26 +1,28 @@
 <script setup>
-import { useForm, Link } from '@inertiajs/vue3'
+import { Head, useForm, Link } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import FormInput from '@/Components/FormInput.vue'
 import FormSelect from '@/Components/FormSelect.vue'
 import { ArrowLeft, Save } from 'lucide-vue-next'
 
 const props = defineProps({
-    admin: Object,
+    item: Object,
 })
 
+const admin = props.item
+
 const form = useForm({
-    username: props.admin.user.username,
-    email: props.admin.user.email,
+    username: admin.user?.username || '',
+    email: admin.user?.email || '',
     password: '',
     password_confirmation: '',
-    full_name: props.admin.user.full_name,
-    phone: props.admin.user.phone || '',
-    date_of_birth: props.admin.user.date_of_birth || '',
-    gender: props.admin.user.gender || '',
-    address: props.admin.user.address || '',
-    status: props.admin.user.status,
-    department: props.admin.department || '',
+    full_name: admin.user?.full_name || '',
+    phone: admin.user?.phone || '',
+    date_of_birth: admin.user?.date_of_birth || '',
+    gender: admin.user?.gender || '',
+    address: admin.user?.address || '',
+    status: admin.user?.status || 'active',
+    department: admin.department || '',
     profile_picture: null,
 })
 
@@ -37,7 +39,7 @@ const statusOptions = [
 ]
 
 const submit = () => {
-    form.post(`/admin/admins/${props.admin.id}`, {
+    form.post(`/admin/admins/${admin.id}`, {
         _method: 'PUT',
         forceFormData: true,
     })
