@@ -55,7 +55,7 @@ class AdminUserController extends Controller
         }
     }
 
-    public function create(): Response
+    public function create()
     {
         return Inertia::render('Admin/Admins/Create');
     }

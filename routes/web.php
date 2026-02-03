@@ -42,12 +42,19 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::get('/admins/{admin}', [AdminUserController::class, 'show'])->name('admins.show');
     });
     Route::middleware('permission:admins.create')->group(function () {
-        Route::get('/admins/create', [AdminUserController::class, 'create'])->name('admins.create');
-        Route::post('/admins', [AdminUserController::class, 'store'])->name('admins.store');
+        Route::get('/admins/create', [AdminUserController::class, 'create'])
+            ->middleware('permission:admins.create')
+            ->name('admins.create');
+
+        Route::post('/admins', [AdminUserController::class, 'store'])
+            ->middleware('permission:admins.create')
+            ->name('admins.store');
     });
     Route::middleware('permission:admins.edit')->group(function () {
-        Route::get('/admins/{admin}/edit', [AdminUserController::class, 'edit'])->name('admins.edit');
-        Route::put('/admins/{admin}', [AdminUserController::class, 'update'])->name('admins.update');
+        Route::get('/admins/{admin}/edit', [AdminUserController::class, 'edit'])
+            ->name('admins.edit');
+        Route::put('/admins/{admin}', [AdminUserController::class, 'update'])
+            ->name('admins.update');
     });
     Route::delete('/admins/{admin}', [AdminUserController::class, 'destroy'])
         ->middleware('permission:admins.delete')
