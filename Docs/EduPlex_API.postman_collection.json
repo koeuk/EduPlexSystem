@@ -1,0 +1,1095 @@
+{
+	"info": {
+		"_postman_id": "eduplex-lms-api-collection",
+		"name": "EduPlex LMS API",
+		"description": "Complete API collection for EduPlex Learning Management System",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{token}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [""]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000/api"
+		}
+	],
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Register",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set(\"token\", jsonData.data.token);",
+									"    pm.environment.set(\"user_id\", jsonData.data.user.id);",
+									"    console.log(\"Token saved:\", jsonData.data.token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"john_doe\",\n    \"email\": \"john@example.com\",\n    \"password\": \"password123\",\n    \"password_confirmation\": \"password123\",\n    \"full_name\": \"John Doe\",\n    \"phone\": \"+1234567890\",\n    \"date_of_birth\": \"1995-05-15\",\n    \"gender\": \"male\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/register",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "register"]
+						}
+					}
+				},
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set(\"token\", jsonData.data.token);",
+									"    pm.environment.set(\"user_id\", jsonData.data.user.id);",
+									"    console.log(\"Token saved:\", jsonData.data.token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"john@example.com\",\n    \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "login"]
+						}
+					}
+				},
+				{
+					"name": "Get Profile",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/auth/profile",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "profile"]
+						}
+					}
+				},
+				{
+					"name": "Update Profile",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"full_name\": \"John Doe Updated\",\n    \"phone\": \"+1987654321\",\n    \"date_of_birth\": \"1995-06-20\",\n    \"gender\": \"male\",\n    \"address\": \"123 Main Street, City\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/profile",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "profile"]
+						}
+					}
+				},
+				{
+					"name": "Change Password",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"current_password\": \"password123\",\n    \"password\": \"newpassword456\",\n    \"password_confirmation\": \"newpassword456\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/change-password",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "change-password"]
+						}
+					}
+				},
+				{
+					"name": "Logout",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    pm.environment.unset(\"token\");",
+									"    console.log(\"Token cleared\");",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/auth/logout",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "logout"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Categories",
+			"item": [
+				{
+					"name": "List Categories",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/categories?filter[status]=active&sort=-created_at&per_page=20",
+							"host": ["{{base_url}}"],
+							"path": ["categories"],
+							"query": [
+								{
+									"key": "filter[status]",
+									"value": "active",
+									"disabled": true
+								},
+								{
+									"key": "filter[search]",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "sort",
+									"value": "-created_at",
+									"disabled": true
+								},
+								{
+									"key": "per_page",
+									"value": "20",
+									"disabled": true
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Category",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/categories/1",
+							"host": ["{{base_url}}"],
+							"path": ["categories", "1"]
+						}
+					}
+				},
+				{
+					"name": "Get Category Courses",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/categories/1/courses",
+							"host": ["{{base_url}}"],
+							"path": ["categories", "1", "courses"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Courses",
+			"item": [
+				{
+					"name": "List Courses",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/courses",
+							"host": ["{{base_url}}"],
+							"path": ["courses"],
+							"query": [
+								{
+									"key": "filter[search]",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "filter[category_id]",
+									"value": "1",
+									"disabled": true
+								},
+								{
+									"key": "filter[level]",
+									"value": "beginner",
+									"disabled": true
+								},
+								{
+									"key": "filter[status]",
+									"value": "published",
+									"disabled": true
+								},
+								{
+									"key": "filter[is_free]",
+									"value": "true",
+									"disabled": true
+								},
+								{
+									"key": "sort",
+									"value": "-created_at",
+									"disabled": true
+								},
+								{
+									"key": "per_page",
+									"value": "20",
+									"disabled": true
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Course",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/courses/1",
+							"host": ["{{base_url}}"],
+							"path": ["courses", "1"]
+						}
+					}
+				},
+				{
+					"name": "Get Course Modules",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/courses/1/modules",
+							"host": ["{{base_url}}"],
+							"path": ["courses", "1", "modules"]
+						}
+					}
+				},
+				{
+					"name": "Get Course Reviews",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/courses/1/reviews",
+							"host": ["{{base_url}}"],
+							"path": ["courses", "1", "reviews"]
+						}
+					}
+				},
+				{
+					"name": "Add Course Review",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"rating\": 5,\n    \"review\": \"Excellent course! Very comprehensive and well-structured.\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/courses/1/reviews",
+							"host": ["{{base_url}}"],
+							"path": ["courses", "1", "reviews"]
+						}
+					}
+				},
+				{
+					"name": "Update Review",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"rating\": 4,\n    \"review\": \"Updated review text here.\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/courses/reviews/1",
+							"host": ["{{base_url}}"],
+							"path": ["courses", "reviews", "1"]
+						}
+					}
+				},
+				{
+					"name": "Delete Review",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/courses/reviews/1",
+							"host": ["{{base_url}}"],
+							"path": ["courses", "reviews", "1"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Enrollments",
+			"item": [
+				{
+					"name": "List Enrollments",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/enrollments",
+							"host": ["{{base_url}}"],
+							"path": ["enrollments"],
+							"query": [
+								{
+									"key": "filter[status]",
+									"value": "active",
+									"disabled": true
+								},
+								{
+									"key": "sort",
+									"value": "-enrolled_at",
+									"disabled": true
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Enroll in Course",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set(\"enrollment_id\", jsonData.data.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"course_id\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/enrollments",
+							"host": ["{{base_url}}"],
+							"path": ["enrollments"]
+						}
+					}
+				},
+				{
+					"name": "Get Enrollment",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/enrollments/{{enrollment_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["enrollments", "{{enrollment_id}}"]
+						}
+					}
+				},
+				{
+					"name": "Drop Enrollment",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/enrollments/{{enrollment_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["enrollments", "{{enrollment_id}}"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Lessons",
+			"item": [
+				{
+					"name": "Get Lesson",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/lessons/1",
+							"host": ["{{base_url}}"],
+							"path": ["lessons", "1"]
+						}
+					}
+				},
+				{
+					"name": "Update Progress",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"progress_percentage\": 75,\n    \"last_position\": 450,\n    \"is_completed\": false\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/lessons/1/progress",
+							"host": ["{{base_url}}"],
+							"path": ["lessons", "1", "progress"]
+						}
+					}
+				},
+				{
+					"name": "Get Progress",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/lessons/1/progress",
+							"host": ["{{base_url}}"],
+							"path": ["lessons", "1", "progress"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Quizzes",
+			"item": [
+				{
+					"name": "Get Quiz",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/quizzes/1",
+							"host": ["{{base_url}}"],
+							"path": ["quizzes", "1"]
+						}
+					}
+				},
+				{
+					"name": "Start Attempt",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set(\"attempt_id\", jsonData.data.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/quizzes/1/attempts",
+							"host": ["{{base_url}}"],
+							"path": ["quizzes", "1", "attempts"]
+						}
+					}
+				},
+				{
+					"name": "Get Attempts History",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/quizzes/1/attempts",
+							"host": ["{{base_url}}"],
+							"path": ["quizzes", "1", "attempts"]
+						}
+					}
+				},
+				{
+					"name": "Submit Attempt",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"answers\": [\n        {\n            \"question_id\": 1,\n            \"selected_option_id\": 3\n        },\n        {\n            \"question_id\": 2,\n            \"selected_option_id\": 7\n        }\n    ]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/quizzes/attempts/{{attempt_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["quizzes", "attempts", "{{attempt_id}}"]
+						}
+					}
+				},
+				{
+					"name": "Get Attempt Results",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/quizzes/attempts/{{attempt_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["quizzes", "attempts", "{{attempt_id}}"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Payments",
+			"item": [
+				{
+					"name": "List Payments",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/payments",
+							"host": ["{{base_url}}"],
+							"path": ["payments"],
+							"query": [
+								{
+									"key": "filter[status]",
+									"value": "completed",
+									"disabled": true
+								},
+								{
+									"key": "sort",
+									"value": "-created_at",
+									"disabled": true
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Process Payment",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set(\"payment_id\", jsonData.data.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"course_id\": 1,\n    \"payment_method\": \"credit_card\",\n    \"amount\": 99.99,\n    \"currency\": \"USD\",\n    \"transaction_id\": \"TXN_123456789\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/payments",
+							"host": ["{{base_url}}"],
+							"path": ["payments"]
+						}
+					}
+				},
+				{
+					"name": "Get Payment",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/payments/{{payment_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["payments", "{{payment_id}}"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Certificates",
+			"item": [
+				{
+					"name": "List Certificates",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/certificates",
+							"host": ["{{base_url}}"],
+							"path": ["certificates"]
+						}
+					}
+				},
+				{
+					"name": "Get Certificate",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/certificates/1",
+							"host": ["{{base_url}}"],
+							"path": ["certificates", "1"]
+						}
+					}
+				},
+				{
+					"name": "Download Certificate",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/pdf"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/certificates/1/download",
+							"host": ["{{base_url}}"],
+							"path": ["certificates", "1", "download"]
+						}
+					}
+				},
+				{
+					"name": "Verify Certificate (Public)",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/certificates/verify/CERT-ABC123",
+							"host": ["{{base_url}}"],
+							"path": ["certificates", "verify", "CERT-ABC123"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Notifications",
+			"item": [
+				{
+					"name": "List Notifications",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/notifications",
+							"host": ["{{base_url}}"],
+							"path": ["notifications"],
+							"query": [
+								{
+									"key": "filter[is_read]",
+									"value": "false",
+									"disabled": true
+								},
+								{
+									"key": "sort",
+									"value": "-created_at",
+									"disabled": true
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Mark as Read",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/notifications/1/read",
+							"host": ["{{base_url}}"],
+							"path": ["notifications", "1", "read"]
+						}
+					}
+				},
+				{
+					"name": "Mark All as Read",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/notifications/read-all",
+							"host": ["{{base_url}}"],
+							"path": ["notifications", "read-all"]
+						}
+					}
+				},
+				{
+					"name": "Delete Notification",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/notifications/1",
+							"host": ["{{base_url}}"],
+							"path": ["notifications", "1"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Dashboard",
+			"item": [
+				{
+					"name": "Get Stats",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/dashboard/stats",
+							"host": ["{{base_url}}"],
+							"path": ["dashboard", "stats"]
+						}
+					}
+				},
+				{
+					"name": "Get Recent Activity",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/dashboard/recent-activity",
+							"host": ["{{base_url}}"],
+							"path": ["dashboard", "recent-activity"]
+						}
+					}
+				},
+				{
+					"name": "Get Activity Log",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/dashboard/activity-log",
+							"host": ["{{base_url}}"],
+							"path": ["dashboard", "activity-log"],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "20",
+									"disabled": true
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Continue Learning",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/dashboard/continue-learning",
+							"host": ["{{base_url}}"],
+							"path": ["dashboard", "continue-learning"]
+						}
+					}
+				}
+			]
+		}
+	]
+}

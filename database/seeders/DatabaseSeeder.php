@@ -2,24 +2,38 @@
 
 namespace Database\Seeders;
 
+use App\Models\Admin;
 use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
-    use WithoutModelEvents;
-
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        // User::factory(10)->create();
+        // Run permission seeder first
+        $this->call(PermissionSeeder::class);
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        // Create default super admin user
+        $user = User::create([
+            'username' => 'admin',
+            'email' => 'admin@eduplex.com',
+            'password' => Hash::make('password'),
+            'full_name' => 'System Administrator',
+            'phone' => '+1234567890',
+            'user_type' => 'admin',
+            'status' => 'active',
         ]);
+
+        // Assign Super Admin role
+        $user->assignRole('Super Admin');
+
+        Admin::create([
+            'user_id' => $user->id,
+            'department' => 'Administration',
+        ]);
+
+        // Run sample data seeder for testing
+        $this->call(SampleDataSeeder::class);
     }
 }
