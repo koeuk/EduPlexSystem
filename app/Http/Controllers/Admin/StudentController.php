@@ -44,6 +44,7 @@ class StudentController extends Controller
 
             return Inertia::render('Admin/Students/Index', [
                 'items' => $items,
+                'filters' => $request->only(['filter']),
                 'statusOptions' => [
                     ['value' => 'active', 'label' => 'Active'],
                     ['value' => 'inactive', 'label' => 'Inactive'],

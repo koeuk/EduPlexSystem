@@ -1,7 +1,99 @@
 <script setup>
-import ComingSoon from '@/Components/ComingSoon.vue'
+import { Head, Link, useForm } from '@inertiajs/vue3'
+import AdminLayout from '@/Layouts/AdminLayout.vue'
+import FormInput from '@/Components/FormInput.vue'
+import FormSelect from '@/Components/FormSelect.vue'
+import { ArrowLeft, Save } from 'lucide-vue-next'
+
+const form = useForm({
+    category_name: '',
+    description: '',
+    icon: '',
+    is_active: true,
+})
+
+const iconOptions = [
+    { value: 'globe', label: 'Globe (Web)' },
+    { value: 'smartphone', label: 'Smartphone (Mobile)' },
+    { value: 'bar-chart', label: 'Bar Chart (Data)' },
+    { value: 'server', label: 'Server (DevOps)' },
+    { value: 'shield', label: 'Shield (Security)' },
+    { value: 'palette', label: 'Palette (Design)' },
+    { value: 'code', label: 'Code (Programming)' },
+    { value: 'database', label: 'Database' },
+    { value: 'cpu', label: 'CPU (Hardware)' },
+    { value: 'cloud', label: 'Cloud' },
+]
+
+const statusOptions = [
+    { value: true, label: 'Active' },
+    { value: false, label: 'Inactive' },
+]
+
+const submit = () => {
+    form.post('/admin/categories')
+}
 </script>
 
 <template>
-    <ComingSoon title="Create Category" back-url="/admin/categories" />
+    <AdminLayout>
+        <Head title="Create Category" />
+
+        <div class="max-w-2xl mx-auto space-y-6">
+            <!-- Header -->
+            <div class="flex items-center space-x-4">
+                <Link href="/admin/categories" class="p-2 hover:bg-gray-100 rounded-lg">
+                    <ArrowLeft class="w-5 h-5" />
+                </Link>
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">Create Category</h1>
+                    <p class="text-gray-500">Add a new course category</p>
+                </div>
+            </div>
+
+            <!-- Form -->
+            <form @submit.prevent="submit" class="card p-6 space-y-6">
+                <FormInput
+                    v-model="form.category_name"
+                    label="Category Name"
+                    :error="form.errors.category_name"
+                    required
+                />
+
+                <FormInput
+                    v-model="form.description"
+                    label="Description"
+                    type="textarea"
+                    :error="form.errors.description"
+                />
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormSelect
+                        v-model="form.icon"
+                        label="Icon"
+                        :options="iconOptions"
+                        placeholder="Select icon"
+                        :error="form.errors.icon"
+                    />
+
+                    <FormSelect
+                        v-model="form.is_active"
+                        label="Status"
+                        :options="statusOptions"
+                        :error="form.errors.is_active"
+                    />
+                </div>
+
+                <div class="flex justify-end space-x-3 pt-4 border-t">
+                    <Link href="/admin/categories" class="btn btn-secondary btn-md">
+                        Cancel
+                    </Link>
+                    <button type="submit" :disabled="form.processing" class="btn btn-primary btn-md">
+                        <Save class="w-4 h-4 mr-2" />
+                        Create Category
+                    </button>
+                </div>
+            </form>
+        </div>
+    </AdminLayout>
 </template>
