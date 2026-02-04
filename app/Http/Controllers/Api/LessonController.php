@@ -36,6 +36,17 @@ class LessonController extends Controller
             ], 403);
         }
 
+        // Check if payment is required and completed
+        if ($enrollment->payment_status !== 'paid') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Payment required to access this course',
+                'payment_required' => true,
+                'enrollment_id' => $enrollment->id,
+                'course_id' => $lesson->course_id,
+            ], 402); // 402 Payment Required
+        }
+
         $lesson->load(['module', 'quiz.questions.options']);
 
         $progress = LessonProgress::where('student_id', $student->id)
@@ -146,6 +157,17 @@ class LessonController extends Controller
                 'success' => false,
                 'message' => 'You are not enrolled in this course',
             ], 403);
+        }
+
+        // Check if payment is required and completed
+        if ($enrollment->payment_status !== 'paid') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Payment required to access this course',
+                'payment_required' => true,
+                'enrollment_id' => $enrollment->id,
+                'course_id' => $lesson->course_id,
+            ], 402);
         }
 
         DB::beginTransaction();

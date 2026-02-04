@@ -6,7 +6,9 @@ use App\Filters\UniversalSearchFilter;
 use App\Http\Controllers\Controller;
 use App\Models\Course;
 use App\Models\Enrollment;
+use App\Models\Notification;
 use App\Models\Student;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -134,7 +136,9 @@ class EnrollmentController extends Controller
                 }
             }
 
-            Enrollment::create([
+            $student = Student::with('user')->find($validated['student_id']);
+
+            $enrollment = Enrollment::create([
                 'student_id' => $validated['student_id'],
                 'course_id' => $validated['course_id'],
                 'enrollment_date' => now(),
@@ -142,6 +146,25 @@ class EnrollmentController extends Controller
                 'payment_status' => $validated['payment_status'],
                 'progress_percentage' => 0,
             ]);
+
+            // Send notification to all admins
+            $admins = User::where('user_type', 'admin')
+                ->where('status', 'active')
+                ->get();
+
+            foreach ($admins as $admin) {
+                Notification::create([
+                    'user_id' => $admin->id,
+                    'title' => __('New Course Enrollment'),
+                    'message' => __(':student has enrolled in :course', [
+                        'student' => $student->user->full_name,
+                        'course' => $course->course_name,
+                    ]),
+                    'type' => 'enrollment',
+                    'related_id' => $enrollment->id,
+                    'is_read' => false,
+                ]);
+            }
 
             DB::commit();
 

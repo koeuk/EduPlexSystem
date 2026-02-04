@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Course;
 use App\Models\Enrollment;
+use App\Models\Notification;
 use App\Models\Payment;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -145,11 +147,44 @@ class PaymentController extends Controller
                 ])
                 ->log('Payment processed');
 
+            // Notify student that payment was successful
+            Notification::create([
+                'user_id' => $user->id,
+                'title' => __('Payment Successful'),
+                'message' => __('Your payment for :course has been completed. You can now access the course.', [
+                    'course' => $course->course_name,
+                ]),
+                'type' => 'success',
+                'related_id' => $enrollment->id,
+                'is_read' => false,
+            ]);
+
+            // Notify admins about the payment
+            $admins = User::where('user_type', 'admin')
+                ->where('status', 'active')
+                ->get();
+
+            foreach ($admins as $admin) {
+                Notification::create([
+                    'user_id' => $admin->id,
+                    'title' => __('New Payment Received'),
+                    'message' => __(':student paid :amount for :course', [
+                        'student' => $user->full_name,
+                        'amount' => '$' . number_format($payment->amount, 2),
+                        'course' => $course->course_name,
+                    ]),
+                    'type' => 'success',
+                    'related_id' => $payment->id,
+                    'is_read' => false,
+                ]);
+            }
+
             DB::commit();
 
             return response()->json([
                 'success' => true,
-                'message' => 'Payment successful',
+                'message' => 'Payment successful. You can now access the course.',
+                'can_access_course' => true,
                 'data' => [
                     'id' => $payment->id,
                     'transaction_id' => $payment->transaction_id,
@@ -157,6 +192,7 @@ class PaymentController extends Controller
                     'payment_method' => $payment->payment_method,
                     'payment_date' => $payment->payment_date,
                     'status' => $payment->status,
+                    'enrollment_id' => $enrollment->id,
                     'course' => [
                         'id' => $course->id,
                         'course_name' => $course->course_name,

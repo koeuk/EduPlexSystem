@@ -19,6 +19,12 @@ class Payment extends Model
         'amount',
         'payment_method',
         'transaction_id',
+        'bakong_transaction_id',
+        'qr_string',
+        'md5_hash',
+        'qr_expires_at',
+        'bakong_status',
+        'bakong_response',
         'payment_date',
         'status',
     ];
@@ -28,7 +34,19 @@ class Payment extends Model
         return [
             'amount' => 'decimal:2',
             'payment_date' => 'datetime',
+            'qr_expires_at' => 'datetime',
+            'bakong_response' => 'array',
         ];
+    }
+
+    public function isQRExpired(): bool
+    {
+        return $this->qr_expires_at && $this->qr_expires_at->isPast();
+    }
+
+    public function isPendingBakong(): bool
+    {
+        return $this->payment_method === 'bakong' && $this->bakong_status === 'PENDING';
     }
 
     public function getActivitylogOptions(): LogOptions

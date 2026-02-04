@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\BakongPaymentController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\CertificateController;
 use App\Http\Controllers\Api\CourseController;
@@ -33,6 +34,9 @@ Route::prefix('auth')->group(function () {
 
 // Certificate verification (public)
 Route::get('/certificates/verify/{code}', [CertificateController::class, 'verify']);
+
+// Bakong webhook (public - no auth required)
+Route::post('/bakong/webhook', [BakongPaymentController::class, 'webhook']);
 
 // Data for select dropdowns
 Route::prefix('data')->group(function () {
@@ -94,6 +98,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::prefix('enrollments')->group(function () {
         Route::get('/', [EnrollmentController::class, 'index']);
         Route::post('/', [EnrollmentController::class, 'store']);
+        Route::post('/enroll-by-code', [EnrollmentController::class, 'enrollByCode']);
         Route::get('/{enrollment}', [EnrollmentController::class, 'show']);
         Route::delete('/{enrollment}', [EnrollmentController::class, 'destroy']);
     });
@@ -123,6 +128,13 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('/', [PaymentController::class, 'index']);
         Route::post('/', [PaymentController::class, 'store']);
         Route::get('/{payment}', [PaymentController::class, 'show']);
+    });
+
+    // Bakong Payment (KHQR)
+    Route::prefix('bakong')->group(function () {
+        Route::post('/generate-qr', [BakongPaymentController::class, 'generateQR']);
+        Route::get('/check-status/{payment}', [BakongPaymentController::class, 'checkStatus']);
+        Route::post('/simulate/{payment}', [BakongPaymentController::class, 'simulateSuccess']); // Test mode only
     });
 
     // Certificates

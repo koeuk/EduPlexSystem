@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Course;
 use App\Models\Enrollment;
+use App\Models\Notification;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -143,6 +145,25 @@ class EnrollmentController extends Controller
                 ])
                 ->log('Enrolled in course');
 
+            // Send notification to all admins
+            $admins = User::where('user_type', 'admin')
+                ->where('status', 'active')
+                ->get();
+
+            foreach ($admins as $admin) {
+                Notification::create([
+                    'user_id' => $admin->id,
+                    'title' => __('New Course Enrollment'),
+                    'message' => __(':student has enrolled in :course', [
+                        'student' => $user->full_name,
+                        'course' => $course->course_name,
+                    ]),
+                    'type' => 'enrollment',
+                    'related_id' => $enrollment->id,
+                    'is_read' => false,
+                ]);
+            }
+
             DB::commit();
 
             return response()->json([
@@ -277,5 +298,157 @@ class EnrollmentController extends Controller
             'success' => true,
             'message' => 'Enrollment dropped successfully',
         ]);
+    }
+
+    /**
+     * Enroll by scanning QR code (enrollment_code)
+     */
+    public function enrollByCode(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'code' => 'required|string|max:20',
+        ]);
+
+        $user = $request->user();
+        $student = $user->student;
+
+        if (!$student) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Student profile not found',
+            ], 404);
+        }
+
+        // Find course by enrollment code
+        $course = Course::where('enrollment_code', strtoupper($validated['code']))->first();
+
+        if (!$course) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid enrollment code',
+            ], 404);
+        }
+
+        if ($course->status !== 'published') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Course is not available for enrollment',
+            ], 422);
+        }
+
+        // Check if already enrolled
+        $existingEnrollment = Enrollment::where('student_id', $student->id)
+            ->where('course_id', $course->id)
+            ->whereIn('status', ['active', 'completed'])
+            ->first();
+
+        if ($existingEnrollment) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You are already enrolled in this course',
+                'data' => [
+                    'enrollment_id' => $existingEnrollment->id,
+                    'course' => [
+                        'id' => $course->id,
+                        'course_name' => $course->course_name,
+                    ],
+                ],
+            ], 422);
+        }
+
+        // Check enrollment limit
+        if ($course->enrollment_limit) {
+            $currentEnrollments = $course->enrollments()
+                ->whereIn('status', ['active', 'completed'])
+                ->count();
+
+            if ($currentEnrollments >= $course->enrollment_limit) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Course enrollment limit has been reached',
+                ], 422);
+            }
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $enrollment = Enrollment::create([
+                'student_id' => $student->id,
+                'course_id' => $course->id,
+                'enrollment_date' => now(),
+                'status' => 'active',
+                'progress_percentage' => 0,
+                'payment_status' => $course->price > 0 ? 'pending' : 'paid',
+                'certificate_issued' => false,
+            ]);
+
+            activity()
+                ->causedBy($user)
+                ->performedOn($enrollment)
+                ->withProperties([
+                    'course_id' => $course->id,
+                    'student_id' => $student->id,
+                    'enrollment_method' => 'qr_code',
+                ])
+                ->log('Enrolled in course via QR code');
+
+            // Send notification to all admins
+            $admins = User::where('user_type', 'admin')
+                ->where('status', 'active')
+                ->get();
+
+            foreach ($admins as $admin) {
+                Notification::create([
+                    'user_id' => $admin->id,
+                    'title' => __('New Course Enrollment (QR)'),
+                    'message' => __(':student has enrolled in :course via QR code', [
+                        'student' => $user->full_name,
+                        'course' => $course->course_name,
+                    ]),
+                    'type' => 'enrollment',
+                    'related_id' => $enrollment->id,
+                    'is_read' => false,
+                ]);
+            }
+
+            DB::commit();
+
+            $paymentRequired = $course->price > 0 && $enrollment->payment_status !== 'paid';
+
+            return response()->json([
+                'success' => true,
+                'message' => $paymentRequired
+                    ? 'Enrolled successfully. Please complete payment to access the course.'
+                    : 'Successfully enrolled in course',
+                'payment_required' => $paymentRequired,
+                'data' => [
+                    'id' => $enrollment->id,
+                    'enrollment_date' => $enrollment->enrollment_date,
+                    'status' => $enrollment->status,
+                    'payment_status' => $enrollment->payment_status,
+                    'can_access_course' => !$paymentRequired,
+                    'course' => [
+                        'id' => $course->id,
+                        'course_name' => $course->course_name,
+                        'course_code' => $course->course_code,
+                        'description' => $course->description,
+                        'level' => $course->level,
+                        'duration_hours' => $course->duration_hours,
+                        'price' => $course->price,
+                        'is_free' => $course->price == 0,
+                        'thumbnail' => $course->thumbnail_url,
+                    ],
+                ],
+            ], 201);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Enrollment failed',
+                'errors' => [$e->getMessage()],
+            ], 500);
+        }
     }
 }

@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\MediaLibrary\HasMedia;
@@ -19,6 +20,7 @@ class Course extends Model implements HasMedia
     protected $fillable = [
         'course_name',
         'course_code',
+        'enrollment_code',
         'description',
         'image_url',
         'category_id',
@@ -31,6 +33,26 @@ class Course extends Model implements HasMedia
         'enrollment_limit',
         'is_featured',
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($course) {
+            if (empty($course->enrollment_code)) {
+                $course->enrollment_code = self::generateUniqueEnrollmentCode();
+            }
+        });
+    }
+
+    public static function generateUniqueEnrollmentCode(): string
+    {
+        do {
+            $code = strtoupper(Str::random(8));
+        } while (self::where('enrollment_code', $code)->exists());
+
+        return $code;
+    }
 
     protected function casts(): array
     {

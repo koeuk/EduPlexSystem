@@ -1,8 +1,10 @@
 <script setup>
+import { ref } from 'vue'
 import { Head, Link } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import Badge from '@/Components/Badge.vue'
-import { ArrowLeft, BookOpen, Clock, Users, Star, DollarSign, Layers } from 'lucide-vue-next'
+import QrcodeVue from 'qrcode.vue'
+import { ArrowLeft, BookOpen, Clock, Users, Star, DollarSign, Layers, QrCode, Copy, Check, Download } from 'lucide-vue-next'
 
 const props = defineProps({
     item: Object,
@@ -39,6 +41,32 @@ const getImageUrl = () => {
     if (!url) return null
     if (url.startsWith('http')) return url
     return `/storage/${url}`
+}
+
+// QR Code functionality
+const copied = ref(false)
+const qrCodeRef = ref(null)
+
+const copyEnrollmentCode = async () => {
+    try {
+        await navigator.clipboard.writeText(course.enrollment_code)
+        copied.value = true
+        setTimeout(() => {
+            copied.value = false
+        }, 2000)
+    } catch (err) {
+        console.error('Failed to copy:', err)
+    }
+}
+
+const downloadQrCode = () => {
+    const canvas = document.querySelector('#qr-code canvas')
+    if (canvas) {
+        const link = document.createElement('a')
+        link.download = `${course.course_code}-qr-code.png`
+        link.href = canvas.toDataURL('image/png')
+        link.click()
+    }
 }
 </script>
 
@@ -203,6 +231,57 @@ const getImageUrl = () => {
                                 <span class="text-gray-500">Last Updated</span>
                                 <span>{{ formatDate(course.updated_at) }}</span>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- QR Code Enrollment -->
+                    <div class="card p-6">
+                        <h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
+                            <QrCode class="w-5 h-5" />
+                            Quick Enrollment
+                        </h2>
+                        <div class="space-y-4">
+                            <!-- Enrollment Code -->
+                            <div>
+                                <label class="text-sm text-gray-500 block mb-1">Enrollment Code</label>
+                                <div class="flex items-center gap-2">
+                                    <code class="flex-1 px-3 py-2 bg-gray-100 rounded-lg font-mono text-lg text-center">
+                                        {{ course.enrollment_code }}
+                                    </code>
+                                    <button
+                                        @click="copyEnrollmentCode"
+                                        class="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                                        :title="copied ? 'Copied!' : 'Copy code'"
+                                    >
+                                        <Check v-if="copied" class="w-5 h-5 text-green-500" />
+                                        <Copy v-else class="w-5 h-5 text-gray-500" />
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- QR Code -->
+                            <div class="flex flex-col items-center">
+                                <div id="qr-code" class="bg-white p-4 rounded-lg border">
+                                    <QrcodeVue
+                                        :value="course.enrollment_code"
+                                        :size="160"
+                                        level="H"
+                                        render-as="canvas"
+                                    />
+                                </div>
+                                <p class="text-xs text-gray-500 mt-2 text-center">
+                                    Students can scan this QR code to enroll
+                                </p>
+                            </div>
+
+                            <!-- Download Button -->
+                            <button
+                                @click="downloadQrCode"
+                                class="btn btn-secondary btn-md w-full"
+                            >
+                                <Download class="w-4 h-4 mr-2" />
+                                Download QR Code
+                            </button>
                         </div>
                     </div>
                 </div>
