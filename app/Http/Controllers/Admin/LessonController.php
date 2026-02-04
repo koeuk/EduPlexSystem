@@ -9,7 +9,7 @@ use App\Models\Lesson;
 use App\Models\Quiz;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 use Spatie\QueryBuilder\AllowedFilter;
@@ -83,15 +83,15 @@ class LessonController extends Controller
     {
         $validated = $request->validate([
             'lesson_title' => ['required', 'string', 'max:255'],
-            'module_id' => ['nullable', 'exists:course_modules,id'],
+            'module_id' => ['nullable', Rule::exists('course_modules', 'id')->where('course_id', $course->id)],
             'lesson_type' => ['required', 'in:video,text,quiz,assignment,document'],
             'description' => ['nullable', 'string'],
             'content' => ['nullable', 'string'],
-            'video_url' => ['nullable', 'url'],
             'video_duration' => ['nullable', 'integer', 'min:0'],
             'quiz_id' => ['nullable', 'exists:quizzes,id'],
             'is_mandatory' => ['boolean'],
             'duration_minutes' => ['nullable', 'integer', 'min:1'],
+            'video' => ['nullable', 'file', 'mimes:mp4,webm,ogg', 'max:512000'],
             'video_thumbnail' => ['nullable', 'image', 'max:2048'],
         ]);
 
@@ -100,16 +100,25 @@ class LessonController extends Controller
         try {
             $maxOrder = $course->lessons()->max('lesson_order') ?? 0;
 
-            $videoThumbnail = null;
-            if ($request->hasFile('video_thumbnail')) {
-                $videoThumbnail = $request->file('video_thumbnail')->store('lesson-thumbnails', 'public');
-            }
-
-            $course->lessons()->create([
-                ...$validated,
-                'video_thumbnail' => $videoThumbnail,
+            $lesson = $course->lessons()->create([
+                'lesson_title' => $validated['lesson_title'],
+                'module_id' => $validated['module_id'] ?? null,
+                'lesson_type' => $validated['lesson_type'],
+                'description' => $validated['description'] ?? null,
+                'content' => $validated['content'] ?? null,
+                'video_duration' => $validated['video_duration'] ?? null,
+                'quiz_id' => $validated['quiz_id'] ?? null,
+                'is_mandatory' => $validated['is_mandatory'] ?? false,
+                'duration_minutes' => $validated['duration_minutes'] ?? null,
                 'lesson_order' => $maxOrder + 1,
             ]);
+
+            if ($request->hasFile('video')) {
+                $lesson->addMediaFromRequest('video')->toMediaCollection('video');
+            }
+            if ($request->hasFile('video_thumbnail')) {
+                $lesson->addMediaFromRequest('video_thumbnail')->toMediaCollection('thumbnail');
+            }
 
             DB::commit();
 
@@ -123,6 +132,10 @@ class LessonController extends Controller
 
     public function edit(Course $course, Lesson $lesson): Response
     {
+        if ($lesson->course_id !== $course->id) {
+            abort(404);
+        }
+        $lesson->append(['video_url', 'video_thumbnail_url']);
         $modules = $course->modules()->orderBy('module_order')->get(['id', 'module_title']);
         $quizzes = Quiz::orderBy('quiz_title')->get(['id', 'quiz_title']);
 
@@ -143,31 +156,46 @@ class LessonController extends Controller
 
     public function update(Request $request, Course $course, Lesson $lesson)
     {
+        if ($lesson->course_id !== $course->id) {
+            abort(404);
+        }
         $validated = $request->validate([
             'lesson_title' => ['required', 'string', 'max:255'],
-            'module_id' => ['nullable', 'exists:course_modules,id'],
+            'module_id' => ['nullable', Rule::exists('course_modules', 'id')->where('course_id', $course->id)],
             'lesson_type' => ['required', 'in:video,text,quiz,assignment,document'],
             'description' => ['nullable', 'string'],
             'content' => ['nullable', 'string'],
-            'video_url' => ['nullable', 'url'],
             'video_duration' => ['nullable', 'integer', 'min:0'],
             'quiz_id' => ['nullable', 'exists:quizzes,id'],
             'is_mandatory' => ['boolean'],
             'duration_minutes' => ['nullable', 'integer', 'min:1'],
+            'video' => ['nullable', 'file', 'mimes:mp4,webm,ogg', 'max:512000'],
             'video_thumbnail' => ['nullable', 'image', 'max:2048'],
         ]);
 
         DB::beginTransaction();
 
         try {
-            if ($request->hasFile('video_thumbnail')) {
-                if ($lesson->video_thumbnail) {
-                    Storage::disk('public')->delete($lesson->video_thumbnail);
-                }
-                $validated['video_thumbnail'] = $request->file('video_thumbnail')->store('lesson-thumbnails', 'public');
-            }
+            $lesson->update([
+                'lesson_title' => $validated['lesson_title'],
+                'module_id' => $validated['module_id'] ?? null,
+                'lesson_type' => $validated['lesson_type'],
+                'description' => $validated['description'] ?? null,
+                'content' => $validated['content'] ?? null,
+                'video_duration' => $validated['video_duration'] ?? null,
+                'quiz_id' => $validated['quiz_id'] ?? null,
+                'is_mandatory' => $validated['is_mandatory'] ?? false,
+                'duration_minutes' => $validated['duration_minutes'] ?? null,
+            ]);
 
-            $lesson->update($validated);
+            if ($request->hasFile('video')) {
+                $lesson->clearMediaCollection('video');
+                $lesson->addMediaFromRequest('video')->toMediaCollection('video');
+            }
+            if ($request->hasFile('video_thumbnail')) {
+                $lesson->clearMediaCollection('thumbnail');
+                $lesson->addMediaFromRequest('video_thumbnail')->toMediaCollection('thumbnail');
+            }
 
             DB::commit();
 
@@ -181,12 +209,15 @@ class LessonController extends Controller
 
     public function destroy(Course $course, Lesson $lesson)
     {
+        if ($lesson->course_id !== $course->id) {
+            abort(404);
+        }
         DB::beginTransaction();
 
         try {
-            if ($lesson->video_thumbnail) {
-                Storage::disk('public')->delete($lesson->video_thumbnail);
-            }
+            $lesson->clearMediaCollection('video');
+            $lesson->clearMediaCollection('thumbnail');
+            $lesson->clearMediaCollection('documents');
 
             $lesson->delete();
 

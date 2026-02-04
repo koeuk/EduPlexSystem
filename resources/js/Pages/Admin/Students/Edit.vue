@@ -40,9 +40,7 @@ const statusOptions = [
 ]
 
 const submit = () => {
-    form.post(`/admin/students/${student.id}`, {
-        _method: 'PUT',
-    })
+    form.put(`/admin/students/${student.id}`)
 }
 
 const handleFileChange = (e) => {

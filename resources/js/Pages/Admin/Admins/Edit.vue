@@ -38,12 +38,19 @@ const statusOptions = [
     { value: 'suspended', label: 'Suspended' },
 ]
 
+// const submit = () => {
+//     form.post(`/admin/admins/${admin.id}`, {
+//         _method: 'PUT',
+//         forceFormData: true,
+//     })
+// }
+
 const submit = () => {
-    form.post(`/admin/admins/${admin.id}`, {
-        _method: 'PUT',
+    form.put(`/admin/admins/${admin.id}`, {
         forceFormData: true,
     })
 }
+
 
 const handleFileChange = (e) => {
     form.profile_picture = e.target.files[0]
