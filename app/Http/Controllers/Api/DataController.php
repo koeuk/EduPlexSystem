@@ -1,0 +1,100 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use App\Models\Category;
+use App\Models\Course;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+
+class DataController extends Controller
+{
+    /**
+     * Get all dropdown options
+     */
+    public function index(): JsonResponse
+    {
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'categories' => $this->getCategoriesData(),
+                'courses' => $this->getCoursesData(),
+            ],
+        ]);
+    }
+
+    /**
+     * Get categories for dropdown
+     */
+    public function categories(): JsonResponse
+    {
+        return response()->json([
+            'success' => true,
+            'data' => $this->getCategoriesData(),
+        ]);
+    }
+
+    /**
+     * Get courses for dropdown
+     */
+    public function courses(Request $request): JsonResponse
+    {
+        $categoryId = $request->query('category_id');
+
+        return response()->json([
+            'success' => true,
+            'data' => $this->getCoursesData($categoryId),
+        ]);
+    }
+
+    /**
+     * Get courses by category for dropdown
+     */
+    public function coursesByCategory(Category $category): JsonResponse
+    {
+        return response()->json([
+            'success' => true,
+            'data' => $this->getCoursesData($category->id),
+        ]);
+    }
+
+    /**
+     * Get categories data
+     */
+    private function getCategoriesData(): array
+    {
+        return Category::query()
+            ->where('is_active', true)
+            ->orderBy('category_name')
+            ->get(['id', 'category_name'])
+            ->map(fn($category) => [
+                'value' => $category->id,
+                'label' => $category->category_name,
+            ])
+            ->toArray();
+    }
+
+    /**
+     * Get courses data
+     */
+    private function getCoursesData(?int $categoryId = null): array
+    {
+        $query = Course::query()
+            ->where('status', 'published')
+            ->orderBy('course_name');
+
+        if ($categoryId) {
+            $query->where('category_id', $categoryId);
+        }
+
+        return $query
+            ->get(['id', 'course_name', 'category_id'])
+            ->map(fn($course) => [
+                'value' => $course->id,
+                'label' => $course->course_name,
+                'category_id' => $course->category_id,
+            ])
+            ->toArray();
+    }
+}

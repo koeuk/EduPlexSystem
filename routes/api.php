@@ -4,9 +4,12 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\CertificateController;
 use App\Http\Controllers\Api\CourseController;
+use App\Http\Controllers\Api\CourseReviewController;
 use App\Http\Controllers\Api\DashboardController;
+use App\Http\Controllers\Api\DataController;
 use App\Http\Controllers\Api\EnrollmentController;
 use App\Http\Controllers\Api\LessonController;
+use App\Http\Controllers\Api\LessonProgressController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\QuizController;
@@ -30,6 +33,14 @@ Route::prefix('auth')->group(function () {
 
 // Certificate verification (public)
 Route::get('/certificates/verify/{code}', [CertificateController::class, 'verify']);
+
+// Data for select dropdowns
+Route::prefix('data')->group(function () {
+    Route::get('/', [DataController::class, 'index']);
+    Route::get('/categories', [DataController::class, 'categories']);
+    Route::get('/courses', [DataController::class, 'courses']);
+    Route::get('/categories/{category}/courses', [DataController::class, 'coursesByCategory']);
+});
 
 // Protected routes (require Sanctum token)
 Route::middleware(['auth:sanctum'])->group(function () {
@@ -58,9 +69,24 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('/{course}/reviews', [CourseController::class, 'storeReview']);
     });
 
-    // Course Reviews (update/delete own)
-    Route::put('/courses/reviews/{review}', [CourseController::class, 'updateReview']);
-    Route::delete('/courses/reviews/{review}', [CourseController::class, 'deleteReview']);
+    // Course Reviews
+    Route::prefix('reviews')->group(function () {
+        Route::get('/', [CourseReviewController::class, 'index']);
+        Route::get('/{review}', [CourseReviewController::class, 'show']);
+        Route::post('/courses/{course}', [CourseReviewController::class, 'store']);
+        Route::get('/courses/{course}', [CourseReviewController::class, 'byCourse']);
+        Route::put('/{review}', [CourseReviewController::class, 'update']);
+        Route::delete('/{review}', [CourseReviewController::class, 'destroy']);
+    });
+
+    // Lesson Progress
+    Route::prefix('progress')->group(function () {
+        Route::get('/', [LessonProgressController::class, 'index']);
+        Route::get('/completed', [LessonProgressController::class, 'completed']);
+        Route::get('/courses/{courseId}', [LessonProgressController::class, 'byCourse']);
+        Route::get('/lessons/{lesson}', [LessonProgressController::class, 'show']);
+        Route::put('/lessons/{lesson}', [LessonProgressController::class, 'update']);
+    });
 
     // Enrollments
     Route::prefix('enrollments')->group(function () {
