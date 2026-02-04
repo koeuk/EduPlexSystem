@@ -26,7 +26,7 @@ class HandleInertiaRequests extends Middleware
                     'username' => $user->username,
                     'email' => $user->email,
                     'full_name' => $user->full_name,
-                    'profile_picture' => $user->profile_picture_url,
+                    'image_url' => $user->image_url,
                     'user_type' => $user->user_type,
                     'roles' => $user->getRoleNames(),
                     'permissions' => $user->getAllPermissions()->pluck('name'),

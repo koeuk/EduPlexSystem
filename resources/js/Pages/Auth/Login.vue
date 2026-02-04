@@ -27,11 +27,9 @@ const submit = () => {
         <div class="bg-white rounded-2xl shadow-xl p-8">
             <!-- Logo -->
             <div class="text-center mb-8">
-                <div class="inline-flex items-center justify-center w-16 h-16 bg-primary-100 rounded-2xl mb-4">
-                    <GraduationCap class="w-8 h-8 text-primary-600" />
-                </div>
+                <img src="/images/logo.png" alt="EduPlex" class="w-20 h-20 object-contain mx-auto mb-4" />
                 <h1 class="text-2xl font-bold text-gray-900">EduPlex LMS</h1>
-                <p class="text-gray-500 mt-1">Admin Dashboard</p>
+                <p class="text-gray-500 mt-1">Ignite Your Learning Journey</p>
             </div>
 
             <form @submit.prevent="submit" class="space-y-5">

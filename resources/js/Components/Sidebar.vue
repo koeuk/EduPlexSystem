@@ -48,20 +48,11 @@ const isActive = (href) => {
         ]"
     >
         <!-- Logo -->
-        <div class="flex items-center justify-between h-16 px-4 border-b border-gray-200">
+        <div :class="['flex items-center h-16 border-b border-gray-200', open ? 'justify-start px-4' : 'justify-center px-2']">
             <Link href="/admin/dashboard" class="flex items-center space-x-3">
-                <div class="w-10 h-10 bg-primary-600 rounded-lg flex items-center justify-center">
-                    <GraduationCap class="w-6 h-6 text-white" />
-                </div>
+                <img src="/images/logo.png" alt="EduPlex" :class="[open ? 'w-10 h-10' : 'w-7 h-7', 'object-contain']" />
                 <span v-if="open" class="text-xl font-bold text-gray-900">EduPlex</span>
             </Link>
-            <button
-                @click="emit('toggle')"
-                class="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500"
-            >
-                <ChevronLeft v-if="open" class="w-5 h-5" />
-                <ChevronRight v-else class="w-5 h-5" />
-            </button>
         </div>
 
         <!-- Navigation -->
