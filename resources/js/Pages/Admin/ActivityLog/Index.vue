@@ -1,10 +1,10 @@
 <script setup>
 import { ref } from 'vue'
-import { Head, router } from '@inertiajs/vue3'
+import { Head, Link, router } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import DataTable from '@/Components/DataTable.vue'
 import Badge from '@/Components/Badge.vue'
-import { Search, Activity, User, Clock } from 'lucide-vue-next'
+import { Search, Activity, User, Clock, Eye } from 'lucide-vue-next'
 
 const props = defineProps({
     items: Object,
@@ -24,6 +24,7 @@ const columns = [
     { key: 'subject', label: 'Subject' },
     { key: 'log_name', label: 'Type', class: 'w-28' },
     { key: 'created_at', label: 'Date', class: 'w-40' },
+    { key: 'actions', label: '', class: 'w-16' },
 ]
 
 const typeOptions = [
@@ -132,6 +133,11 @@ const formatDateTime = (date) => {
                         <Clock class="w-3 h-3" />
                         {{ formatDateTime(row.created_at) }}
                     </div>
+                </template>
+                <template #actions="{ row }">
+                    <Link :href="`/admin/activity-log/${row.id}`" class="p-1 text-gray-500 hover:text-primary-600">
+                        <Eye class="w-4 h-4" />
+                    </Link>
                 </template>
             </DataTable>
         </div>

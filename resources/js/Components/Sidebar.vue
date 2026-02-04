@@ -4,7 +4,7 @@ import { Link, usePage } from '@inertiajs/vue3'
 import {
     LayoutDashboard, Users, GraduationCap, FolderOpen, BookOpen,
     FileText, ClipboardList, CreditCard, Award, Star, Bell,
-    BarChart3, Settings, ChevronLeft, ChevronRight, HelpCircle
+    BarChart3, ChevronLeft, ChevronRight, HelpCircle
 } from 'lucide-vue-next'
 
 const props = defineProps({
@@ -19,7 +19,6 @@ const menuItems = [
     { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
     { name: 'Admins', href: '/admin/admins', icon: Users },
     { name: 'Students', href: '/admin/students', icon: GraduationCap },
-    { name: 'Lessons', href: '/courses/admin/lessons', icon: FolderOpen },
     { name: 'Categories', href: '/admin/categories', icon: FolderOpen },
     { name: 'Courses', href: '/admin/courses', icon: BookOpen },
     { name: 'Quizzes', href: '/admin/quizzes', icon: HelpCircle },
@@ -29,6 +28,7 @@ const menuItems = [
     { name: 'Reviews', href: '/admin/reviews', icon: Star },
     { name: 'Notifications', href: '/admin/notifications', icon: Bell },
     { name: 'Reports', href: '/admin/reports', icon: BarChart3 },
+    { name: 'Activity Log', href: '/admin/activity-log', icon: FileText },
 ]
 
 const isActive = (href) => {

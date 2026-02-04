@@ -5,7 +5,7 @@ import AdminLayout from '@/Layouts/AdminLayout.vue'
 import DataTable from '@/Components/DataTable.vue'
 import Badge from '@/Components/Badge.vue'
 import ConfirmModal from '@/Components/ConfirmModal.vue'
-import { Plus, Pencil, Trash2, Search } from 'lucide-vue-next'
+import { Plus, Pencil, Trash2, Search, Eye } from 'lucide-vue-next'
 
 const props = defineProps({
     items: Object,
@@ -107,6 +107,9 @@ const getStatusVariant = (status) => {
                 </template>
                 <template #actions="{ row }">
                     <div class="flex items-center space-x-2">
+                        <Link :href="`/admin/admins/${row.id}`" class="p-1 text-gray-500 hover:text-primary-600">
+                            <Eye class="w-4 h-4" />
+                        </Link>
                         <Link :href="`/admin/admins/${row.id}/edit`" class="p-1 text-gray-500 hover:text-primary-600">
                             <Pencil class="w-4 h-4" />
                         </Link>
