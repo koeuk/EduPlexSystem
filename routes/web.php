@@ -135,22 +135,22 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         ->middleware('permission:modules.delete')
         ->name('courses.modules.destroy');
 
-    // Course Lessons (requires lessons.* permissions)
+    // Module Lessons (requires lessons.* permissions)
     Route::middleware('permission:lessons.view')->group(function () {
-        Route::get('/courses/{course}/lessons', [LessonController::class, 'index'])->name('courses.lessons.index');
+        Route::get('/courses/{course}/modules/{module}/lessons', [LessonController::class, 'index'])->name('courses.modules.lessons.index');
+        Route::get('/courses/{course}/modules/{module}/lessons/{lesson}', [LessonController::class, 'show'])->name('courses.modules.lessons.show');
     });
     Route::middleware('permission:lessons.create')->group(function () {
-        Route::get('/courses/{course}/lessons/create', [LessonController::class, 'create'])->name('courses.lessons.create');
-        Route::post('/courses/{course}/lessons', [LessonController::class, 'store'])->name('courses.lessons.store');
+        Route::get('/courses/{course}/modules/{module}/lessons/create', [LessonController::class, 'create'])->name('courses.modules.lessons.create');
+        Route::post('/courses/{course}/modules/{module}/lessons', [LessonController::class, 'store'])->name('courses.modules.lessons.store');
     });
     Route::middleware('permission:lessons.edit')->group(function () {
-        Route::get('/courses/{course}/lessons/{lesson}/edit', [LessonController::class, 'edit'])->name('courses.lessons.edit');
-        Route::put('/courses/{course}/lessons/{lesson}', [LessonController::class, 'update'])->name('courses.lessons.update');
-        Route::post('/courses/{course}/lessons/reorder', [LessonController::class, 'reorder'])->name('courses.lessons.reorder');
+        Route::get('/courses/{course}/modules/{module}/lessons/{lesson}/edit', [LessonController::class, 'edit'])->name('courses.modules.lessons.edit');
+        Route::put('/courses/{course}/modules/{module}/lessons/{lesson}', [LessonController::class, 'update'])->name('courses.modules.lessons.update');
     });
-    Route::delete('/courses/{course}/lessons/{lesson}', [LessonController::class, 'destroy'])
+    Route::delete('/courses/{course}/modules/{module}/lessons/{lesson}', [LessonController::class, 'destroy'])
         ->middleware('permission:lessons.delete')
-        ->name('courses.lessons.destroy');
+        ->name('courses.modules.lessons.destroy');
 
     // Quizzes (requires quizzes.* permissions)
     Route::middleware('permission:quizzes.view')->group(function () {
@@ -185,6 +185,12 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::delete('/quizzes/{quiz}/questions/{question}', [QuestionController::class, 'destroy'])
         ->middleware('permission:quizzes.delete')
         ->name('quizzes.questions.destroy');
+
+    // Quiz Attempts (requires quizzes.view permission)
+    Route::middleware('permission:quizzes.view')->group(function () {
+        Route::get('/quizzes/{quiz}/attempts', [QuizController::class, 'attempts'])->name('quizzes.attempts.index');
+        Route::get('/quizzes/{quiz}/attempts/{attempt}', [QuizController::class, 'showAttempt'])->name('quizzes.attempts.show');
+    });
 
     // Enrollments (requires enrollments.* permissions)
     Route::middleware('permission:enrollments.view')->group(function () {

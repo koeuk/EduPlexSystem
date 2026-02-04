@@ -35,7 +35,7 @@ class ModuleController extends Controller
 
             DB::commit();
 
-            return Inertia::render('Admin/Modules/Index', [
+            return Inertia::render('Admin/Courses/Modules/Index', [
                 'course' => $course,
                 'items' => $items,
             ]);
@@ -47,7 +47,7 @@ class ModuleController extends Controller
 
     public function create(Course $course): Response
     {
-        return Inertia::render('Admin/Modules/Create', [
+        return Inertia::render('Admin/Courses/Modules/Create', [
             'course' => $course,
         ]);
     }
@@ -81,7 +81,7 @@ class ModuleController extends Controller
 
     public function edit(Course $course, CourseModule $module): Response
     {
-        return Inertia::render('Admin/Modules/Edit', [
+        return Inertia::render('Admin/Courses/Modules/Edit', [
             'course' => $course,
             'item' => $module,
         ]);

@@ -1,17 +1,42 @@
 <script setup>
+import { ref } from 'vue'
 import { Head, Link, useForm } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import FormInput from '@/Components/FormInput.vue'
 import FormSelect from '@/Components/FormSelect.vue'
-import { ArrowLeft, Save } from 'lucide-vue-next'
+import { ArrowLeft, Save, Upload, X } from 'lucide-vue-next'
 
 const form = useForm({
     category_name: '',
     description: '',
     icon: '',
-    image_url: '',
+    image: null,
     is_active: true,
 })
+
+const imagePreview = ref(null)
+
+const handleImageChange = (e) => {
+    const file = e.target.files[0]
+    if (file) {
+        form.image = file
+        const reader = new FileReader()
+        reader.onload = (e) => {
+            imagePreview.value = e.target.result
+        }
+        reader.readAsDataURL(file)
+    }
+}
+
+const removeImage = () => {
+    form.image = null
+    imagePreview.value = null
+    document.getElementById('category-image-upload').value = ''
+}
+
+const triggerImageInput = () => {
+    document.getElementById('category-image-upload').click()
+}
 
 const iconOptions = [
     { value: 'globe', label: 'Globe (Web)' },
@@ -68,12 +93,49 @@ const submit = () => {
                     :error="form.errors.description"
                 />
 
-                <FormInput
-                    v-model="form.image_url"
-                    label="Image URL"
-                    placeholder="https://example.com/image.jpg"
-                    :error="form.errors.image_url"
-                />
+                <!-- Image Upload -->
+                <div>
+                    <label class="label block mb-1.5">Category Image (optional)</label>
+                    <div
+                        @click="triggerImageInput"
+                        class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-primary-400 hover:bg-primary-50 transition-colors"
+                    >
+                        <template v-if="imagePreview">
+                            <div class="relative inline-block">
+                                <img
+                                    :src="imagePreview"
+                                    alt="Preview"
+                                    class="max-h-40 max-w-full object-contain rounded"
+                                />
+                                <button
+                                    type="button"
+                                    @click.stop="removeImage"
+                                    class="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
+                                >
+                                    <X class="w-4 h-4" />
+                                </button>
+                            </div>
+                            <p class="mt-2 text-xs text-gray-500">Click to change</p>
+                        </template>
+                        <template v-else>
+                            <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                <Upload class="w-6 h-6 text-gray-400" />
+                            </div>
+                            <p class="text-sm font-medium text-gray-700">Click to upload image</p>
+                            <p class="text-xs text-gray-500 mt-1">PNG, JPG, GIF up to 2MB</p>
+                        </template>
+                    </div>
+                    <input
+                        id="category-image-upload"
+                        type="file"
+                        accept="image/*"
+                        @change="handleImageChange"
+                        class="hidden"
+                    />
+                    <p v-if="form.errors.image" class="mt-2 text-sm text-red-500">
+                        {{ form.errors.image }}
+                    </p>
+                </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <FormSelect

@@ -40,7 +40,6 @@ const editForm = useForm({
     description: '',
     icon: '',
     image: null,
-    image_url: '',
     is_active: true,
 })
 

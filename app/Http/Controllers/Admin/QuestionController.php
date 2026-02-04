@@ -20,6 +20,8 @@ class QuestionController extends Controller
         DB::beginTransaction();
 
         try {
+            $quiz->loadCount('questions');
+
             $items = QueryBuilder::for(QuizQuestion::class)
                 ->select('*')
                 ->where('quiz_id', $quiz->id)
@@ -54,6 +56,8 @@ class QuestionController extends Controller
 
     public function create(Quiz $quiz): Response
     {
+        $quiz->loadCount('questions');
+
         return Inertia::render('Admin/Quizzes/Questions/Create', [
             'quiz' => $quiz,
             'questionTypeOptions' => [
@@ -72,7 +76,7 @@ class QuestionController extends Controller
             'question_type' => ['required', 'in:multiple_choice,true_false,short_answer,essay'],
             'points' => ['required', 'integer', 'min:1'],
             'explanation' => ['nullable', 'string'],
-            'image_url' => ['nullable', 'url'],
+            'image' => ['nullable', 'image', 'max:2048'],
             'options' => ['required_if:question_type,multiple_choice,true_false', 'array'],
             'options.*.option_text' => ['required', 'string'],
             'options.*.is_correct' => ['boolean'],
@@ -83,12 +87,17 @@ class QuestionController extends Controller
         try {
             $maxOrder = $quiz->questions()->max('question_order') ?? 0;
 
+            $imageUrl = null;
+            if ($request->hasFile('image')) {
+                $imageUrl = $request->file('image')->store('questions', 'public');
+            }
+
             $question = $quiz->questions()->create([
                 'question_text' => $validated['question_text'],
                 'question_type' => $validated['question_type'],
                 'points' => $validated['points'],
                 'explanation' => $validated['explanation'] ?? null,
-                'image_url' => $validated['image_url'] ?? null,
+                'image_url' => $imageUrl,
                 'question_order' => $maxOrder + 1,
             ]);
 
@@ -114,6 +123,7 @@ class QuestionController extends Controller
 
     public function edit(Quiz $quiz, QuizQuestion $question): Response
     {
+        $quiz->loadCount('questions');
         $question->load('options');
 
         return Inertia::render('Admin/Quizzes/Questions/Edit', [
@@ -135,7 +145,7 @@ class QuestionController extends Controller
             'question_type' => ['required', 'in:multiple_choice,true_false,short_answer,essay'],
             'points' => ['required', 'integer', 'min:1'],
             'explanation' => ['nullable', 'string'],
-            'image_url' => ['nullable', 'url'],
+            'image' => ['nullable', 'image', 'max:2048'],
             'options' => ['required_if:question_type,multiple_choice,true_false', 'array'],
             'options.*.id' => ['nullable', 'exists:quiz_options,id'],
             'options.*.option_text' => ['required', 'string'],
@@ -145,12 +155,17 @@ class QuestionController extends Controller
         DB::beginTransaction();
 
         try {
+            $imageUrl = $question->image_url;
+            if ($request->hasFile('image')) {
+                $imageUrl = $request->file('image')->store('questions', 'public');
+            }
+
             $question->update([
                 'question_text' => $validated['question_text'],
                 'question_type' => $validated['question_type'],
                 'points' => $validated['points'],
                 'explanation' => $validated['explanation'] ?? null,
-                'image_url' => $validated['image_url'] ?? null,
+                'image_url' => $imageUrl,
             ]);
 
             $question->options()->delete();

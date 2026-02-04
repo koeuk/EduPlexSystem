@@ -1,10 +1,10 @@
 <script setup>
 import { ref } from 'vue'
 import { Head, Link, useForm } from '@inertiajs/vue3'
-import AdminLayout from '@/Layouts/AdminLayout.vue'
+import QuizEditLayout from '@/Layouts/QuizEditLayout.vue'
 import FormInput from '@/Components/FormInput.vue'
 import FormSelect from '@/Components/FormSelect.vue'
-import { ArrowLeft, Save, Plus, Trash2 } from 'lucide-vue-next'
+import { ArrowLeft, Save, Plus, Trash2, FileText, Settings, Upload, X } from 'lucide-vue-next'
 
 const props = defineProps({
     quiz: Object,
@@ -16,12 +16,14 @@ const form = useForm({
     question_type: 'multiple_choice',
     points: 1,
     explanation: '',
-    image_url: '',
+    image: null,
     options: [
         { option_text: '', is_correct: true },
         { option_text: '', is_correct: false },
     ],
 })
+
+const imagePreview = ref(null)
 
 const addOption = () => {
     form.options.push({ option_text: '', is_correct: false })
@@ -41,77 +43,154 @@ const setCorrectOption = (index) => {
     }
 }
 
+const handleImageChange = (e) => {
+    const file = e.target.files[0]
+    if (file) {
+        form.image = file
+        const reader = new FileReader()
+        reader.onload = (e) => {
+            imagePreview.value = e.target.result
+        }
+        reader.readAsDataURL(file)
+    }
+}
+
+const removeImage = () => {
+    form.image = null
+    imagePreview.value = null
+    document.getElementById('question-image-upload').value = ''
+}
+
+const triggerImageInput = () => {
+    document.getElementById('question-image-upload').click()
+}
+
 const submit = () => {
     form.post(`/admin/quizzes/${props.quiz.id}/questions`)
 }
 </script>
 
 <template>
-    <AdminLayout>
+    <QuizEditLayout :quiz="quiz">
         <Head title="Create Question" />
 
-        <div class="max-w-3xl mx-auto space-y-6">
+        <div class="space-y-6">
             <!-- Header -->
-            <div class="flex items-center space-x-4">
-                <Link :href="`/admin/quizzes/${quiz.id}/questions`" class="p-2 hover:bg-gray-100 rounded-lg">
-                    <ArrowLeft class="w-5 h-5" />
-                </Link>
-                <div>
-                    <h1 class="text-2xl font-bold text-gray-900">Create Question</h1>
-                    <p class="text-gray-500">{{ quiz.quiz_title }}</p>
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <Link :href="`/admin/quizzes/${quiz.id}/questions`" class="p-2 hover:bg-gray-100 rounded-lg">
+                        <ArrowLeft class="w-5 h-5" />
+                    </Link>
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900">Create Question</h1>
+                        <p class="text-gray-500">Add a new question to the quiz</p>
+                    </div>
                 </div>
+                <button
+                    @click="submit"
+                    :disabled="form.processing"
+                    class="btn btn-primary btn-md"
+                >
+                    <Save class="w-4 h-4 mr-2" />
+                    Create Question
+                </button>
             </div>
 
             <!-- Form -->
             <form @submit.prevent="submit" class="space-y-6">
-                <div class="card p-6 space-y-6">
-                    <h2 class="text-lg font-semibold">Question Details</h2>
-
-                    <FormInput
-                        v-model="form.question_text"
-                        label="Question"
-                        type="textarea"
-                        :error="form.errors.question_text"
-                        required
-                    />
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <FormSelect
-                            v-model="form.question_type"
-                            label="Question Type"
-                            :options="questionTypeOptions"
-                            :error="form.errors.question_type"
-                            required
-                        />
-
-                        <FormInput
-                            v-model="form.points"
-                            label="Points"
-                            type="number"
-                            :error="form.errors.points"
-                            required
-                        />
+                <div class="card p-6">
+                    <div class="flex items-center gap-2 mb-4">
+                        <FileText class="w-5 h-5 text-gray-600" />
+                        <h3 class="font-semibold text-gray-900">Question Details</h3>
                     </div>
 
-                    <FormInput
-                        v-model="form.explanation"
-                        label="Explanation (shown after answering)"
-                        type="textarea"
-                        :error="form.errors.explanation"
-                    />
+                    <div class="space-y-4">
+                        <FormInput
+                            v-model="form.question_text"
+                            label="Question"
+                            type="textarea"
+                            :error="form.errors.question_text"
+                            required
+                        />
 
-                    <FormInput
-                        v-model="form.image_url"
-                        label="Image URL (optional)"
-                        placeholder="https://..."
-                        :error="form.errors.image_url"
-                    />
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <FormSelect
+                                v-model="form.question_type"
+                                label="Question Type"
+                                :options="questionTypeOptions"
+                                :error="form.errors.question_type"
+                                required
+                            />
+
+                            <FormInput
+                                v-model="form.points"
+                                label="Points"
+                                type="number"
+                                :error="form.errors.points"
+                                required
+                            />
+                        </div>
+
+                        <FormInput
+                            v-model="form.explanation"
+                            label="Explanation (shown after answering)"
+                            type="textarea"
+                            :error="form.errors.explanation"
+                        />
+
+                        <!-- Image Upload -->
+                        <div>
+                            <label class="label block mb-1.5">Question Image (optional)</label>
+                            <div
+                                @click="triggerImageInput"
+                                class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-primary-400 hover:bg-primary-50 transition-colors"
+                            >
+                                <template v-if="imagePreview">
+                                    <div class="relative inline-block">
+                                        <img
+                                            :src="imagePreview"
+                                            alt="Preview"
+                                            class="max-h-40 max-w-full object-contain rounded"
+                                        />
+                                        <button
+                                            type="button"
+                                            @click.stop="removeImage"
+                                            class="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
+                                        >
+                                            <X class="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                    <p class="mt-2 text-xs text-gray-500">Click to change</p>
+                                </template>
+                                <template v-else>
+                                    <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                        <Upload class="w-6 h-6 text-gray-400" />
+                                    </div>
+                                    <p class="text-sm font-medium text-gray-700">Click to upload image</p>
+                                    <p class="text-xs text-gray-500 mt-1">PNG, JPG, GIF up to 2MB</p>
+                                </template>
+                            </div>
+                            <input
+                                id="question-image-upload"
+                                type="file"
+                                accept="image/*"
+                                @change="handleImageChange"
+                                class="hidden"
+                            />
+                            <p v-if="form.errors.image" class="mt-2 text-sm text-red-500">
+                                {{ form.errors.image }}
+                            </p>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Options for Multiple Choice / True-False -->
-                <div v-if="form.question_type === 'multiple_choice' || form.question_type === 'true_false'" class="card p-6 space-y-6">
-                    <div class="flex items-center justify-between">
-                        <h2 class="text-lg font-semibold">Answer Options</h2>
+                <div v-if="form.question_type === 'multiple_choice' || form.question_type === 'true_false'" class="card p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-2">
+                            <Settings class="w-5 h-5 text-gray-600" />
+                            <h3 class="font-semibold text-gray-900">Answer Options</h3>
+                        </div>
                         <button v-if="form.question_type === 'multiple_choice'" type="button" @click="addOption" class="btn btn-secondary btn-sm">
                             <Plus class="w-4 h-4 mr-1" />
                             Add Option
@@ -148,19 +227,9 @@ const submit = () => {
                             </div>
                         </div>
                     </div>
-                    <p v-if="form.errors.options" class="text-sm text-red-500">{{ form.errors.options }}</p>
-                </div>
-
-                <div class="flex justify-end space-x-3">
-                    <Link :href="`/admin/quizzes/${quiz.id}/questions`" class="btn btn-secondary btn-md">
-                        Cancel
-                    </Link>
-                    <button type="submit" :disabled="form.processing" class="btn btn-primary btn-md">
-                        <Save class="w-4 h-4 mr-2" />
-                        Create Question
-                    </button>
+                    <p v-if="form.errors.options" class="text-sm text-red-500 mt-2">{{ form.errors.options }}</p>
                 </div>
             </form>
         </div>
-    </AdminLayout>
+    </QuizEditLayout>
 </template>

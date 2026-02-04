@@ -17,7 +17,6 @@ const form = useForm({
     address: '',
     department: '',
     profile_picture: null,
-    image_url: '',
 })
 
 const genderOptions = [
@@ -109,7 +108,7 @@ const handleFileChange = (e) => {
                         label="Department"
                         :error="form.errors.department"
                     />
-                    <div>
+                    <div class="md:col-span-2">
                         <label class="label block mb-1.5">Profile Picture</label>
                         <input
                             type="file"
@@ -121,12 +120,6 @@ const handleFileChange = (e) => {
                             {{ form.errors.profile_picture }}
                         </p>
                     </div>
-                    <FormInput
-                        v-model="form.image_url"
-                        label="Image URL"
-                        placeholder="https://example.com/image.jpg"
-                        :error="form.errors.image_url"
-                    />
                 </div>
 
                 <div class="md:col-span-2">
