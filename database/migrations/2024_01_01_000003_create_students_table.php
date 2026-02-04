@@ -14,6 +14,7 @@ return new class extends Migration
             $table->string('student_id_number')->unique();
             $table->date('enrollment_date')->nullable();
             $table->enum('student_status', ['active', 'inactive', 'graduated', 'suspended'])->default('active');
+            $table->string('image_url', 500)->nullable();
             $table->timestamp('created_at')->useCurrent();
 
             $table->index('student_status');

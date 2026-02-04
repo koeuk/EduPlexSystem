@@ -15,6 +15,7 @@ const form = useForm({
     category_name: category.category_name,
     description: category.description || '',
     icon: category.icon || '',
+    image_url: category.image_url || '',
     is_active: category.is_active,
 })
 
@@ -71,6 +72,13 @@ const submit = () => {
                     label="Description"
                     type="textarea"
                     :error="form.errors.description"
+                />
+
+                <FormInput
+                    v-model="form.image_url"
+                    label="Image URL"
+                    placeholder="https://example.com/image.jpg"
+                    :error="form.errors.image_url"
                 />
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">

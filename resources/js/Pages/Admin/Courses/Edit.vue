@@ -27,6 +27,7 @@ const form = useForm({
     is_featured: course.is_featured || false,
     status: course.status || 'draft',
     thumbnail: null,
+    image_url: course.image_url || '',
 })
 
 const featuredOptions = [
@@ -171,6 +172,13 @@ const handleFileChange = (e) => {
                             {{ form.errors.thumbnail }}
                         </p>
                     </div>
+
+                    <FormInput
+                        v-model="form.image_url"
+                        label="Image URL"
+                        placeholder="https://example.com/image.jpg"
+                        :error="form.errors.image_url"
+                    />
                 </div>
 
                 <!-- Actions -->

@@ -24,6 +24,7 @@ const form = useForm({
     duration_minutes: '',
     video: null,
     video_thumbnail: null,
+    image_url: '',
 })
 
 const boolOptions = [
@@ -112,6 +113,13 @@ const submit = () => {
                             :error="form.errors.is_mandatory"
                         />
                     </div>
+
+                    <FormInput
+                        v-model="form.image_url"
+                        label="Image URL"
+                        placeholder="https://example.com/image.jpg"
+                        :error="form.errors.image_url"
+                    />
                 </div>
 
                 <!-- Video Content -->

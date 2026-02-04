@@ -22,6 +22,7 @@ class Lesson extends Model implements HasMedia
         'lesson_type',
         'lesson_order',
         'description',
+        'image_url',
         'content',
         'video_duration',
         'quiz_id',

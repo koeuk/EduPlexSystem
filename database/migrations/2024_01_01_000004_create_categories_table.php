@@ -13,6 +13,7 @@ return new class extends Migration
             $table->string('category_name');
             $table->text('description')->nullable();
             $table->string('icon')->nullable();
+            $table->string('image_url', 500)->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestamps();
 

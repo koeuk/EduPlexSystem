@@ -29,6 +29,7 @@ class User extends Authenticatable implements HasMedia
         'date_of_birth',
         'gender',
         'address',
+        'image_url',
         'status',
     ];
 

@@ -12,6 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->unique()->constrained('users')->cascadeOnDelete();
             $table->string('department')->nullable();
+            $table->string('image_url', 500)->nullable();
             $table->timestamp('created_at')->useCurrent();
 
             $table->index('department');

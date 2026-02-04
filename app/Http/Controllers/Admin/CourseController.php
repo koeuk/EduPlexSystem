@@ -126,6 +126,7 @@ class CourseController extends Controller
             'enrollment_limit' => ['nullable', 'integer', 'min:1'],
             'is_featured' => ['boolean'],
             'thumbnail' => ['nullable', 'image', 'max:2048'],
+            'image_url' => ['nullable', 'string', 'max:500'],
         ]);
 
         DB::beginTransaction();
@@ -139,6 +140,7 @@ class CourseController extends Controller
             Course::create([
                 ...$validated,
                 'thumbnail' => $thumbnail,
+                'image_url' => $validated['image_url'] ?? null,
                 'admin_id' => auth()->user()->admin->id,
                 'status' => 'draft',
             ]);
@@ -187,6 +189,7 @@ class CourseController extends Controller
             'is_featured' => ['boolean'],
             'status' => ['nullable', 'in:draft,published,archived'],
             'thumbnail' => ['nullable', 'image', 'max:2048'],
+            'image_url' => ['nullable', 'string', 'max:500'],
         ]);
 
         DB::beginTransaction();

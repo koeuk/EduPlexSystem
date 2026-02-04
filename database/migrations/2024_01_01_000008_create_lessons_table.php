@@ -16,6 +16,7 @@ return new class extends Migration
             $table->enum('lesson_type', ['video', 'text', 'quiz', 'assignment', 'document'])->default('text');
             $table->integer('lesson_order')->default(0);
             $table->text('description')->nullable();
+            $table->string('image_url', 500)->nullable();
             $table->longText('content')->nullable();
             $table->integer('video_duration')->nullable()->comment('Duration in seconds');
             $table->foreignId('quiz_id')->nullable()->constrained('quizzes')->nullOnDelete();

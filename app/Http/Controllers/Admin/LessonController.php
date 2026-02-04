@@ -93,6 +93,7 @@ class LessonController extends Controller
             'duration_minutes' => ['nullable', 'integer', 'min:1'],
             'video' => ['nullable', 'file', 'mimes:mp4,webm,ogg', 'max:512000'],
             'video_thumbnail' => ['nullable', 'image', 'max:2048'],
+            'image_url' => ['nullable', 'string', 'max:500'],
         ]);
 
         DB::beginTransaction();
@@ -106,6 +107,7 @@ class LessonController extends Controller
                 'lesson_type' => $validated['lesson_type'],
                 'description' => $validated['description'] ?? null,
                 'content' => $validated['content'] ?? null,
+                'image_url' => $validated['image_url'] ?? null,
                 'video_duration' => $validated['video_duration'] ?? null,
                 'quiz_id' => $validated['quiz_id'] ?? null,
                 'is_mandatory' => $validated['is_mandatory'] ?? false,
@@ -171,6 +173,7 @@ class LessonController extends Controller
             'duration_minutes' => ['nullable', 'integer', 'min:1'],
             'video' => ['nullable', 'file', 'mimes:mp4,webm,ogg', 'max:512000'],
             'video_thumbnail' => ['nullable', 'image', 'max:2048'],
+            'image_url' => ['nullable', 'string', 'max:500'],
         ]);
 
         DB::beginTransaction();
@@ -182,6 +185,7 @@ class LessonController extends Controller
                 'lesson_type' => $validated['lesson_type'],
                 'description' => $validated['description'] ?? null,
                 'content' => $validated['content'] ?? null,
+                'image_url' => $validated['image_url'] ?? null,
                 'video_duration' => $validated['video_duration'] ?? null,
                 'quiz_id' => $validated['quiz_id'] ?? null,
                 'is_mandatory' => $validated['is_mandatory'] ?? false,

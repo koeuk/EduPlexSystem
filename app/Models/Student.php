@@ -19,6 +19,7 @@ class Student extends Model
         'student_id_number',
         'enrollment_date',
         'student_status',
+        'image_url',
     ];
 
     protected function casts(): array

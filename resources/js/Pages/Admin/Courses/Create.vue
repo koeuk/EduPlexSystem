@@ -22,6 +22,7 @@ const form = useForm({
     enrollment_limit: '',
     is_featured: false,
     thumbnail: null,
+    image_url: '',
 })
 
 const featuredOptions = [
@@ -152,6 +153,13 @@ const handleFileChange = (e) => {
                             {{ form.errors.thumbnail }}
                         </p>
                     </div>
+
+                    <FormInput
+                        v-model="form.image_url"
+                        label="Image URL"
+                        placeholder="https://example.com/image.jpg"
+                        :error="form.errors.image_url"
+                    />
                 </div>
 
                 <!-- Actions -->

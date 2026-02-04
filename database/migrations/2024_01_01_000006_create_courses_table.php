@@ -13,6 +13,7 @@ return new class extends Migration
             $table->string('course_name');
             $table->string('course_code')->unique();
             $table->text('description')->nullable();
+            $table->string('image_url', 500)->nullable();
             $table->foreignId('category_id')->nullable()->constrained('categories')->nullOnDelete();
             $table->enum('level', ['beginner', 'intermediate', 'advanced'])->default('beginner');
             $table->integer('duration_hours')->nullable();

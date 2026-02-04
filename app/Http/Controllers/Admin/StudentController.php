@@ -109,6 +109,7 @@ class StudentController extends Controller
             'enrollment_date' => ['nullable', 'date'],
             'student_status' => ['required', 'in:active,inactive,graduated,suspended'],
             'profile_picture' => ['nullable', 'image', 'max:2048'],
+            'image_url' => ['nullable', 'string', 'max:500'],
         ]);
 
         DB::beginTransaction();
@@ -130,6 +131,7 @@ class StudentController extends Controller
                 'date_of_birth' => $validated['date_of_birth'] ?? null,
                 'gender' => $validated['gender'] ?? null,
                 'address' => $validated['address'] ?? null,
+                'image_url' => $validated['image_url'] ?? null,
                 'status' => 'active',
             ]);
 
@@ -138,6 +140,7 @@ class StudentController extends Controller
                 'student_id_number' => $validated['student_id_number'],
                 'enrollment_date' => $validated['enrollment_date'] ?? now(),
                 'student_status' => $validated['student_status'],
+                'image_url' => $validated['image_url'] ?? null,
             ]);
 
             DB::commit();
@@ -174,6 +177,7 @@ class StudentController extends Controller
             'enrollment_date' => ['nullable', 'date'],
             'student_status' => ['required', 'in:active,inactive,graduated,suspended'],
             'profile_picture' => ['nullable', 'image', 'max:2048'],
+            'image_url' => ['nullable', 'string', 'max:500'],
         ]);
 
         DB::beginTransaction();
@@ -187,6 +191,7 @@ class StudentController extends Controller
                 'date_of_birth' => $validated['date_of_birth'] ?? null,
                 'gender' => $validated['gender'] ?? null,
                 'address' => $validated['address'] ?? null,
+                'image_url' => $validated['image_url'] ?? null,
                 'status' => $validated['status'],
             ];
 
@@ -206,6 +211,7 @@ class StudentController extends Controller
                 'student_id_number' => $validated['student_id_number'],
                 'enrollment_date' => $validated['enrollment_date'],
                 'student_status' => $validated['student_status'],
+                'image_url' => $validated['image_url'] ?? null,
             ]);
 
             DB::commit();

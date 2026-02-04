@@ -24,6 +24,7 @@ const form = useForm({
     enrollment_date: student.enrollment_date || '',
     student_status: student.student_status,
     profile_picture: null,
+    image_url: student.image_url || student.user?.image_url || '',
 })
 
 const genderOptions = [
@@ -144,6 +145,12 @@ const handleFileChange = (e) => {
                             {{ form.errors.profile_picture }}
                         </p>
                     </div>
+                    <FormInput
+                        v-model="form.image_url"
+                        label="Image URL"
+                        placeholder="https://example.com/image.jpg"
+                        :error="form.errors.image_url"
+                    />
                 </div>
 
                 <div>

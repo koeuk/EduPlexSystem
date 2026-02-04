@@ -17,6 +17,7 @@ class Admin extends Model
     protected $fillable = [
         'user_id',
         'department',
+        'image_url',
     ];
 
     protected function casts(): array

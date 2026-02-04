@@ -90,6 +90,7 @@ class AdminUserController extends Controller
             'address' => ['nullable', 'string'],
             'department' => ['nullable', 'string', 'max:255'],
             'profile_picture' => ['nullable', 'image', 'max:2048'],
+            'image_url' => ['nullable', 'string', 'max:500'],
         ]);
 
         DB::beginTransaction();
@@ -105,6 +106,7 @@ class AdminUserController extends Controller
                 'date_of_birth' => $validated['date_of_birth'] ?? null,
                 'gender' => $validated['gender'] ?? null,
                 'address' => $validated['address'] ?? null,
+                'image_url' => $validated['image_url'] ?? null,
                 'status' => 'active',
             ]);
 
@@ -116,6 +118,7 @@ class AdminUserController extends Controller
             Admin::create([
                 'user_id' => $user->id,
                 'department' => $validated['department'] ?? null,
+                'image_url' => $validated['image_url'] ?? null,
             ]);
 
             DB::commit();
@@ -150,6 +153,7 @@ class AdminUserController extends Controller
             'status' => ['required', 'in:active,inactive,suspended'],
             'department' => ['nullable', 'string', 'max:255'],
             'profile_picture' => ['nullable', 'image', 'max:2048'],
+            'image_url' => ['nullable', 'string', 'max:500'],
         ]);
 
         DB::beginTransaction();
@@ -163,6 +167,7 @@ class AdminUserController extends Controller
                 'date_of_birth' => $validated['date_of_birth'] ?? null,
                 'gender' => $validated['gender'] ?? null,
                 'address' => $validated['address'] ?? null,
+                'image_url' => $validated['image_url'] ?? null,
                 'status' => $validated['status'],
             ];
 
@@ -177,7 +182,10 @@ class AdminUserController extends Controller
             }
 
             $admin->user->update($userData);
-            $admin->update(['department' => $validated['department'] ?? null]);
+            $admin->update([
+                'department' => $validated['department'] ?? null,
+                'image_url' => $validated['image_url'] ?? null,
+            ]);
 
             DB::commit();
 

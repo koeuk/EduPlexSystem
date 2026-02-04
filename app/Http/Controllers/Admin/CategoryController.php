@@ -58,6 +58,7 @@ class CategoryController extends Controller
             'category_name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'icon' => ['nullable', 'string', 'max:100'],
+            'image_url' => ['nullable', 'string', 'max:500'],
             'is_active' => ['boolean'],
         ]);
 
@@ -88,6 +89,7 @@ class CategoryController extends Controller
             'category_name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'icon' => ['nullable', 'string', 'max:100'],
+            'image_url' => ['nullable', 'string', 'max:500'],
             'is_active' => ['boolean'],
         ]);
 
