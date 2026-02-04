@@ -8,24 +8,27 @@ use Spatie\QueryBuilder\Filters\Filter;
 class UniversalSearchFilter implements Filter
 {
     protected array $fields;
+    protected bool $useJoin;
 
-    public function __construct(array $fields)
+    public function __construct(array $fields, bool $useJoin = false)
     {
         $this->fields = $fields;
+        $this->useJoin = $useJoin;
     }
 
     public function __invoke(Builder $query, $value, string $property): void
     {
         $query->where(function (Builder $query) use ($value) {
             foreach ($this->fields as $index => $field) {
-                if (str_contains($field, '.')) {
+                $method = $index === 0 ? 'where' : 'orWhere';
+
+                if (str_contains($field, '.') && !$this->useJoin) {
                     [$relation, $column] = explode('.', $field, 2);
-                    $method = $index === 0 ? 'whereHas' : 'orWhereHas';
-                    $query->{$method}($relation, function (Builder $q) use ($column, $value) {
+                    $relationMethod = $index === 0 ? 'whereHas' : 'orWhereHas';
+                    $query->{$relationMethod}($relation, function (Builder $q) use ($column, $value) {
                         $q->where($column, 'like', "%{$value}%");
                     });
                 } else {
-                    $method = $index === 0 ? 'where' : 'orWhere';
                     $query->{$method}($field, 'like', "%{$value}%");
                 }
             }

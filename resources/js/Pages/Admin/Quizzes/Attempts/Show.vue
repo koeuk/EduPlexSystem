@@ -36,7 +36,7 @@ const getAnswerStatus = (answer) => {
                     </Link>
                     <div>
                         <h1 class="text-2xl font-bold text-gray-900">Attempt Details</h1>
-                        <p class="text-gray-500">Attempt #{{ attempt.attempt_number }} by {{ attempt.student?.first_name }} {{ attempt.student?.last_name }}</p>
+                        <p class="text-gray-500">Attempt #{{ attempt.attempt_number }} by {{ attempt.student?.user?.full_name }}</p>
                     </div>
                 </div>
                 <Badge v-if="!attempt.submitted_at" variant="warning" class="text-base px-4 py-2">
@@ -57,12 +57,18 @@ const getAnswerStatus = (answer) => {
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div class="card p-4">
                     <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
-                            <User class="w-5 h-5 text-gray-600" />
+                        <div class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center overflow-hidden">
+                            <img
+                                v-if="attempt.student?.user?.image_url"
+                                :src="attempt.student.user.image_url.startsWith('http') ? attempt.student.user.image_url : `/storage/${attempt.student.user.image_url}`"
+                                :alt="attempt.student?.user?.full_name"
+                                class="w-full h-full object-cover"
+                            />
+                            <User v-else class="w-5 h-5 text-gray-600" />
                         </div>
                         <div>
                             <p class="text-sm text-gray-500">Student</p>
-                            <p class="font-medium">{{ attempt.student?.first_name }} {{ attempt.student?.last_name }}</p>
+                            <p class="font-medium">{{ attempt.student?.user?.full_name }}</p>
                         </div>
                     </div>
                 </div>

@@ -8,6 +8,7 @@ use App\Models\Quiz;
 use App\Models\QuizAttempt;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 use Spatie\QueryBuilder\AllowedFilter;
@@ -15,7 +16,7 @@ use Spatie\QueryBuilder\QueryBuilder;
 
 class QuizController extends Controller
 {
-    public function index(Request $request): Response
+    public function index(Request $request): Response|RedirectResponse
     {
         DB::beginTransaction();
 
@@ -157,15 +158,14 @@ class QuizController extends Controller
         $quiz->average_score = $quiz->attempts()->whereNotNull('submitted_at')->avg('score_percentage');
 
         $query = QuizAttempt::where('quiz_id', $quiz->id)
-            ->with('student')
+            ->with('student.user')
             ->latest('started_at');
 
         // Search filter
         if ($request->filled('search')) {
             $search = $request->input('search');
-            $query->whereHas('student', function ($q) use ($search) {
-                $q->where('first_name', 'like', "%{$search}%")
-                    ->orWhere('last_name', 'like', "%{$search}%")
+            $query->whereHas('student.user', function ($q) use ($search) {
+                $q->where('full_name', 'like', "%{$search}%")
                     ->orWhere('email', 'like', "%{$search}%");
             });
         }
@@ -200,7 +200,7 @@ class QuizController extends Controller
         $quiz->loadCount('questions');
 
         $attempt->load([
-            'student',
+            'student.user',
             'answers.question.options',
             'answers.selectedOption',
         ]);

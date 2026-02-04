@@ -10,7 +10,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use App\Enums\UserStatus;
 use Illuminate\Validation\Rule;
+use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 use Spatie\QueryBuilder\AllowedFilter;
@@ -18,7 +20,7 @@ use Spatie\QueryBuilder\QueryBuilder;
 
 class AdminUserController extends Controller
 {
-    public function index(Request $request): Response
+    public function index(Request $request): Response|RedirectResponse
     {
         DB::beginTransaction();
 
@@ -29,10 +31,7 @@ class AdminUserController extends Controller
                 ->join('users', 'admins.user_id', '=', 'users.id')
                 ->allowedFilters([
                     AllowedFilter::partial('full_name', 'users.full_name'),
-                    AllowedFilter::partial('email', 'users.email'),
                     AllowedFilter::exact('status', 'users.status'),
-                    AllowedFilter::partial('department'),
-                    AllowedFilter::custom('search', new UniversalSearchFilter(['users.full_name', 'users.email', 'users.username', 'department'])),
                 ])
                 ->allowedSorts(['created_at', 'users.full_name'])
                 ->latest('admins.created_at')
@@ -43,11 +42,8 @@ class AdminUserController extends Controller
 
             return Inertia::render('Admin/Admins/Index', [
                 'items' => $items,
-                'statusOptions' => [
-                    ['value' => 'active', 'label' => 'Active'],
-                    ['value' => 'inactive', 'label' => 'Inactive'],
-                    ['value' => 'suspended', 'label' => 'Suspended'],
-                ],
+                'filters' => $request->only(['filter']),
+                'statusOptions' => UserStatus::options(),
             ]);
         } catch (\Exception $e) {
             DB::rollback();
@@ -55,7 +51,7 @@ class AdminUserController extends Controller
         }
     }
 
-    public function show(Admin $admin): Response
+    public function show(Admin $admin): Response|RedirectResponse
     {
         DB::beginTransaction();
 

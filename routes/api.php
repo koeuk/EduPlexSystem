@@ -40,6 +40,8 @@ Route::prefix('data')->group(function () {
     Route::get('/categories', [DataController::class, 'categories']);
     Route::get('/courses', [DataController::class, 'courses']);
     Route::get('/categories/{category}/courses', [DataController::class, 'coursesByCategory']);
+    Route::get('/user-statuses', [DataController::class, 'userStatuses']);
+    Route::get('/student-statuses', [DataController::class, 'studentStatuses']);
 });
 
 // Protected routes (require Sanctum token)

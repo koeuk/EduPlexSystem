@@ -106,8 +106,14 @@ const formatDate = (date) => {
             <DataTable :columns="columns" :data="enrollments?.data || []" :pagination="enrollments">
                 <template #student="{ row }">
                     <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-                            <span class="text-sm font-medium text-gray-500">
+                        <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
+                            <img
+                                v-if="row.student?.user?.image_url"
+                                :src="row.student.user.image_url.startsWith('http') ? row.student.user.image_url : `/storage/${row.student.user.image_url}`"
+                                :alt="row.student?.user?.full_name"
+                                class="w-full h-full object-cover"
+                            />
+                            <span v-else class="text-sm font-medium text-gray-500">
                                 {{ row.student?.user?.full_name?.charAt(0) || '?' }}
                             </span>
                         </div>

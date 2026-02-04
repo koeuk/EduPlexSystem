@@ -14,8 +14,8 @@ const props = defineProps({
 
 const admins = props.items
 
-const search = ref(props.filters?.search || '')
-const status = ref(props.filters?.status || '')
+const search = ref(props.filters?.filter?.full_name || '')
+const status = ref(props.filters?.filter?.status || '')
 const deleteModal = ref(false)
 const adminToDelete = ref(null)
 
@@ -35,10 +35,10 @@ const getImageUrl = (row) => {
 }
 
 const applyFilters = () => {
-    router.get('/admin/admins', {
-        search: search.value,
-        status: status.value,
-    }, { preserveState: true })
+    const params = {}
+    if (search.value) params['filter[full_name]'] = search.value
+    if (status.value) params['filter[status]'] = status.value
+    router.get('/admin/admins', params, { preserveState: true, replace: true })
 }
 
 const confirmDelete = (admin) => {

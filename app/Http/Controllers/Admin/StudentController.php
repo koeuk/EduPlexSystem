@@ -10,7 +10,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use App\Enums\StudentStatus;
 use Illuminate\Validation\Rule;
+use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 use Spatie\QueryBuilder\AllowedFilter;
@@ -18,7 +20,7 @@ use Spatie\QueryBuilder\QueryBuilder;
 
 class StudentController extends Controller
 {
-    public function index(Request $request): Response
+    public function index(Request $request): Response|RedirectResponse
     {
         DB::beginTransaction();
 
@@ -45,12 +47,7 @@ class StudentController extends Controller
             return Inertia::render('Admin/Students/Index', [
                 'items' => $items,
                 'filters' => $request->only(['filter']),
-                'statusOptions' => [
-                    ['value' => 'active', 'label' => 'Active'],
-                    ['value' => 'inactive', 'label' => 'Inactive'],
-                    ['value' => 'graduated', 'label' => 'Graduated'],
-                    ['value' => 'suspended', 'label' => 'Suspended'],
-                ],
+                'statusOptions' => StudentStatus::options(),
             ]);
         } catch (\Exception $e) {
             DB::rollback();
@@ -58,7 +55,7 @@ class StudentController extends Controller
         }
     }
 
-    public function show(Student $student): Response
+    public function show(Student $student): Response|RedirectResponse
     {
         DB::beginTransaction();
 

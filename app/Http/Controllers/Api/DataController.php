@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\StudentStatus;
+use App\Enums\UserStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Course;
@@ -20,6 +22,8 @@ class DataController extends Controller
             'data' => [
                 'categories' => $this->getCategoriesData(),
                 'courses' => $this->getCoursesData(),
+                'userStatuses' => UserStatus::options(),
+                'studentStatuses' => StudentStatus::options(),
             ],
         ]);
     }
@@ -56,6 +60,28 @@ class DataController extends Controller
         return response()->json([
             'success' => true,
             'data' => $this->getCoursesData($category->id),
+        ]);
+    }
+
+    /**
+     * Get user status options
+     */
+    public function userStatuses(): JsonResponse
+    {
+        return response()->json([
+            'success' => true,
+            'data' => UserStatus::options(),
+        ]);
+    }
+
+    /**
+     * Get student status options
+     */
+    public function studentStatuses(): JsonResponse
+    {
+        return response()->json([
+            'success' => true,
+            'data' => StudentStatus::options(),
         ]);
     }
 

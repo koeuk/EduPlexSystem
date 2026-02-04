@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Models\CourseReview;
 use App\Models\QuizQuestion;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -29,7 +30,8 @@ class AppServiceProvider extends ServiceProvider
             return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
         });
 
-        // Explicit route model binding for question -> QuizQuestion
+        // Explicit route model bindings
         Route::model('question', QuizQuestion::class);
+        Route::model('review', CourseReview::class);
     }
 }
