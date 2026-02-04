@@ -32,7 +32,7 @@ const confirmDelete = (question) => {
 }
 
 const deleteQuestion = () => {
-    router.delete(`/admin/questions/${questionToDelete.value.id}`, {
+    router.delete(`/admin/quizzes/${quiz.id}/questions/${questionToDelete.value.id}`, {
         onSuccess: () => {
             deleteModal.value = false
             questionToDelete.value = null
@@ -151,7 +151,7 @@ const deleteQuestion = () => {
                                 </div>
 
                                 <div class="flex items-center space-x-2 ml-4">
-                                    <Link :href="`/admin/questions/${question.id}/edit`"
+                                    <Link :href="`/admin/quizzes/${quiz.id}/questions/${question.id}/edit`"
                                         class="p-1 text-gray-500 hover:text-primary-600">
                                         <Pencil class="w-4 h-4" />
                                     </Link>

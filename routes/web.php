@@ -155,11 +155,13 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Quizzes (requires quizzes.* permissions)
     Route::middleware('permission:quizzes.view')->group(function () {
         Route::get('/quizzes', [QuizController::class, 'index'])->name('quizzes.index');
-        Route::get('/quizzes/{quiz}', [QuizController::class, 'show'])->name('quizzes.show');
     });
     Route::middleware('permission:quizzes.create')->group(function () {
         Route::get('/quizzes/create', [QuizController::class, 'create'])->name('quizzes.create');
         Route::post('/quizzes', [QuizController::class, 'store'])->name('quizzes.store');
+    });
+    Route::middleware('permission:quizzes.view')->group(function () {
+        Route::get('/quizzes/{quiz}', [QuizController::class, 'show'])->name('quizzes.show');
     });
     Route::middleware('permission:quizzes.edit')->group(function () {
         Route::get('/quizzes/{quiz}/edit', [QuizController::class, 'edit'])->name('quizzes.edit');

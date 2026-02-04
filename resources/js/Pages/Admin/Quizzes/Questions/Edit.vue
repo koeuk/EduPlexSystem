@@ -52,7 +52,7 @@ const removeOption = (index) => {
 }
 
 const setCorrectOption = (index) => {
-    if (form.question_type === 'multiple_choice') {
+    if (form.question_type === 'multiple_choice' || form.question_type === 'true_false') {
         form.options.forEach((opt, i) => {
             opt.is_correct = i === index
         })
@@ -82,6 +82,11 @@ const triggerImageInput = () => {
 }
 
 const submit = () => {
+    // Ensure is_correct is properly set as boolean for each option
+    form.options = form.options.map(opt => ({
+        ...opt,
+        is_correct: opt.is_correct === true
+    }))
     form.post(`/admin/quizzes/${props.quiz.id}/questions/${question.id}`)
 }
 </script>
