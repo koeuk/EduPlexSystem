@@ -108,16 +108,15 @@ class StudentController extends Controller
             'student_id_number' => ['required', 'string', 'max:50', 'unique:students'],
             'enrollment_date' => ['nullable', 'date'],
             'student_status' => ['required', 'in:active,inactive,graduated,suspended'],
-            'profile_picture' => ['nullable', 'image', 'max:2048'],
-            'image_url' => ['nullable', 'string', 'max:500'],
+            'image' => ['nullable', 'image', 'max:2048'],
         ]);
 
         DB::beginTransaction();
 
         try {
-            $profilePicture = null;
-            if ($request->hasFile('profile_picture')) {
-                $profilePicture = $request->file('profile_picture')->store('profile-pictures', 'public');
+            $imageUrl = null;
+            if ($request->hasFile('image')) {
+                $imageUrl = $request->file('image')->store('students', 'public');
             }
 
             $user = User::create([
@@ -127,11 +126,10 @@ class StudentController extends Controller
                 'full_name' => $validated['full_name'],
                 'phone' => $validated['phone'] ?? null,
                 'user_type' => 'student',
-                'profile_picture' => $profilePicture,
                 'date_of_birth' => $validated['date_of_birth'] ?? null,
                 'gender' => $validated['gender'] ?? null,
                 'address' => $validated['address'] ?? null,
-                'image_url' => $validated['image_url'] ?? null,
+                'image_url' => $imageUrl,
                 'status' => 'active',
             ]);
 
@@ -176,8 +174,7 @@ class StudentController extends Controller
             'student_id_number' => ['required', 'string', 'max:50', Rule::unique('students')->ignore($student->id)],
             'enrollment_date' => ['nullable', 'date'],
             'student_status' => ['required', 'in:active,inactive,graduated,suspended'],
-            'profile_picture' => ['nullable', 'image', 'max:2048'],
-            'image_url' => ['nullable', 'string', 'max:500'],
+            'image' => ['nullable', 'image', 'max:2048'],
         ]);
 
         DB::beginTransaction();
@@ -191,7 +188,6 @@ class StudentController extends Controller
                 'date_of_birth' => $validated['date_of_birth'] ?? null,
                 'gender' => $validated['gender'] ?? null,
                 'address' => $validated['address'] ?? null,
-                'image_url' => $validated['image_url'] ?? null,
                 'status' => $validated['status'],
             ];
 
@@ -199,11 +195,11 @@ class StudentController extends Controller
                 $userData['password'] = Hash::make($validated['password']);
             }
 
-            if ($request->hasFile('profile_picture')) {
-                if ($student->user->profile_picture) {
-                    Storage::disk('public')->delete($student->user->profile_picture);
+            if ($request->hasFile('image')) {
+                if ($student->user->image_url) {
+                    Storage::disk('public')->delete($student->user->image_url);
                 }
-                $userData['profile_picture'] = $request->file('profile_picture')->store('profile-pictures', 'public');
+                $userData['image_url'] = $request->file('image')->store('students', 'public');
             }
 
             $student->user->update($userData);
@@ -211,7 +207,6 @@ class StudentController extends Controller
                 'student_id_number' => $validated['student_id_number'],
                 'enrollment_date' => $validated['enrollment_date'],
                 'student_status' => $validated['student_status'],
-                'image_url' => $validated['image_url'] ?? null,
             ]);
 
             DB::commit();
@@ -228,8 +223,8 @@ class StudentController extends Controller
         DB::beginTransaction();
 
         try {
-            if ($student->user->profile_picture) {
-                Storage::disk('public')->delete($student->user->profile_picture);
+            if ($student->user->image_url) {
+                Storage::disk('public')->delete($student->user->image_url);
             }
             $student->user->delete();
 

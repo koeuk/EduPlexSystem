@@ -1,9 +1,10 @@
 <script setup>
+import { ref } from 'vue'
 import { Head, useForm, Link } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import FormInput from '@/Components/FormInput.vue'
 import FormSelect from '@/Components/FormSelect.vue'
-import { ArrowLeft, Save } from 'lucide-vue-next'
+import { ArrowLeft, Save, Upload, X } from 'lucide-vue-next'
 
 const props = defineProps({
     item: Object,
@@ -12,6 +13,7 @@ const props = defineProps({
 const admin = props.item
 
 const form = useForm({
+    _method: 'PUT',
     username: admin.user?.username || '',
     email: admin.user?.email || '',
     password: '',
@@ -23,8 +25,10 @@ const form = useForm({
     address: admin.user?.address || '',
     status: admin.user?.status || 'active',
     department: admin.department || '',
-    profile_picture: null,
+    image: null,
 })
+
+const imagePreview = ref(null)
 
 const genderOptions = [
     { value: 'male', label: 'Male' },
@@ -38,22 +42,37 @@ const statusOptions = [
     { value: 'suspended', label: 'Suspended' },
 ]
 
-// const submit = () => {
-//     form.post(`/admin/admins/${admin.id}`, {
-//         _method: 'PUT',
-//         forceFormData: true,
-//     })
-// }
-
-const submit = () => {
-    form.put(`/admin/admins/${admin.id}`, {
-        forceFormData: true,
-    })
+const getCurrentImage = () => {
+    const url = admin.user?.image_url
+    if (!url) return null
+    if (url.startsWith('http')) return url
+    return `/storage/${url}`
 }
 
+const submit = () => {
+    form.post(`/admin/admins/${admin.id}`)
+}
 
-const handleFileChange = (e) => {
-    form.profile_picture = e.target.files[0]
+const handleImageChange = (e) => {
+    const file = e.target.files[0]
+    if (file) {
+        form.image = file
+        const reader = new FileReader()
+        reader.onload = (e) => {
+            imagePreview.value = e.target.result
+        }
+        reader.readAsDataURL(file)
+    }
+}
+
+const removeImage = () => {
+    form.image = null
+    imagePreview.value = null
+    document.getElementById('image-upload').value = ''
+}
+
+const triggerImageInput = () => {
+    document.getElementById('image-upload').click()
 }
 </script>
 
@@ -137,21 +156,53 @@ const handleFileChange = (e) => {
                         label="Department"
                         :error="form.errors.department"
                     />
-                    <div class="md:col-span-2">
-                        <label class="label block mb-1.5">Profile Picture</label>
-                        <input
-                            type="file"
-                            accept="image/*"
-                            @change="handleFileChange"
-                            class="input"
-                        />
-                        <p v-if="form.errors.profile_picture" class="mt-1 text-sm text-red-500">
-                            {{ form.errors.profile_picture }}
-                        </p>
-                    </div>
                 </div>
 
-                <div class="md:col-span-2">
+                <!-- Profile Picture Upload -->
+                <div>
+                    <label class="label block mb-1.5">Profile Picture</label>
+                    <div
+                        @click="triggerImageInput"
+                        class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-primary-400 hover:bg-primary-50 transition-colors"
+                    >
+                        <template v-if="imagePreview || getCurrentImage()">
+                            <div class="relative inline-block">
+                                <img
+                                    :src="imagePreview || getCurrentImage()"
+                                    alt="Preview"
+                                    class="max-h-40 max-w-full object-contain rounded"
+                                />
+                                <button
+                                    type="button"
+                                    @click.stop="removeImage"
+                                    class="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
+                                >
+                                    <X class="w-4 h-4" />
+                                </button>
+                            </div>
+                            <p class="mt-2 text-xs text-gray-500">Click to change</p>
+                        </template>
+                        <template v-else>
+                            <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                <Upload class="w-6 h-6 text-gray-400" />
+                            </div>
+                            <p class="text-sm font-medium text-gray-700">Click to upload image</p>
+                            <p class="text-xs text-gray-500 mt-1">PNG, JPG, GIF up to 2MB</p>
+                        </template>
+                    </div>
+                    <input
+                        id="image-upload"
+                        type="file"
+                        accept="image/*"
+                        @change="handleImageChange"
+                        class="hidden"
+                    />
+                    <p v-if="form.errors.image" class="mt-2 text-sm text-red-500">
+                        {{ form.errors.image }}
+                    </p>
+                </div>
+
+                <div>
                     <FormInput
                         v-model="form.address"
                         label="Address"

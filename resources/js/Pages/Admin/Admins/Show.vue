@@ -24,14 +24,11 @@ const formatDate = (date) => {
     return new Date(date).toLocaleDateString()
 }
 
-const getProfileImage = () => {
-    if (admin.user?.image_url) {
-        if (admin.user.image_url.startsWith('http')) {
-            return admin.user.image_url
-        }
-        return `/storage/${admin.user.image_url}`
-    }
-    return null
+const getImageUrl = () => {
+    const url = admin.user?.image_url
+    if (!url) return null
+    if (url.startsWith('http')) return url
+    return `/storage/${url}`
 }
 </script>
 
@@ -64,8 +61,8 @@ const getProfileImage = () => {
                     <div class="flex items-center space-x-3">
                         <div class="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
                             <img
-                                v-if="getProfileImage()"
-                                :src="getProfileImage()"
+                                v-if="getImageUrl()"
+                                :src="getImageUrl()"
                                 :alt="admin.user?.full_name"
                                 class="w-full h-full object-cover"
                             />

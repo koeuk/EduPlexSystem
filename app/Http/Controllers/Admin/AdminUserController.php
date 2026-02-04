@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -89,13 +90,17 @@ class AdminUserController extends Controller
             'gender' => ['nullable', 'in:male,female,other'],
             'address' => ['nullable', 'string'],
             'department' => ['nullable', 'string', 'max:255'],
-            'profile_picture' => ['nullable', 'image', 'max:2048'],
-            'image_url' => ['nullable', 'string', 'max:500'],
+            'image' => ['nullable', 'image', 'max:2048'],
         ]);
 
         DB::beginTransaction();
 
         try {
+            $imageUrl = null;
+            if ($request->hasFile('image')) {
+                $imageUrl = $request->file('image')->store('admins', 'public');
+            }
+
             $user = User::create([
                 'username' => $validated['username'],
                 'email' => $validated['email'],
@@ -106,19 +111,13 @@ class AdminUserController extends Controller
                 'date_of_birth' => $validated['date_of_birth'] ?? null,
                 'gender' => $validated['gender'] ?? null,
                 'address' => $validated['address'] ?? null,
-                'image_url' => $validated['image_url'] ?? null,
+                'image_url' => $imageUrl,
                 'status' => 'active',
             ]);
-
-            if ($request->hasFile('profile_picture')) {
-                $user->addMediaFromRequest('profile_picture')
-                    ->toMediaCollection('profile_picture');
-            }
 
             Admin::create([
                 'user_id' => $user->id,
                 'department' => $validated['department'] ?? null,
-                'image_url' => $validated['image_url'] ?? null,
             ]);
 
             DB::commit();
@@ -152,8 +151,7 @@ class AdminUserController extends Controller
             'address' => ['nullable', 'string'],
             'status' => ['required', 'in:active,inactive,suspended'],
             'department' => ['nullable', 'string', 'max:255'],
-            'profile_picture' => ['nullable', 'image', 'max:2048'],
-            'image_url' => ['nullable', 'string', 'max:500'],
+            'image' => ['nullable', 'image', 'max:2048'],
         ]);
 
         DB::beginTransaction();
@@ -167,7 +165,6 @@ class AdminUserController extends Controller
                 'date_of_birth' => $validated['date_of_birth'] ?? null,
                 'gender' => $validated['gender'] ?? null,
                 'address' => $validated['address'] ?? null,
-                'image_url' => $validated['image_url'] ?? null,
                 'status' => $validated['status'],
             ];
 
@@ -175,16 +172,16 @@ class AdminUserController extends Controller
                 $userData['password'] = Hash::make($validated['password']);
             }
 
-            if ($request->hasFile('profile_picture')) {
-                $admin->user->clearMediaCollection('profile_picture');
-                $admin->user->addMediaFromRequest('profile_picture')
-                    ->toMediaCollection('profile_picture');
+            if ($request->hasFile('image')) {
+                if ($admin->user->image_url) {
+                    Storage::disk('public')->delete($admin->user->image_url);
+                }
+                $userData['image_url'] = $request->file('image')->store('admins', 'public');
             }
 
             $admin->user->update($userData);
             $admin->update([
                 'department' => $validated['department'] ?? null,
-                'image_url' => $validated['image_url'] ?? null,
             ]);
 
             DB::commit();
@@ -205,7 +202,9 @@ class AdminUserController extends Controller
         DB::beginTransaction();
 
         try {
-            $admin->user->clearMediaCollection('profile_picture');
+            if ($admin->user->image_url) {
+                Storage::disk('public')->delete($admin->user->image_url);
+            }
             $admin->user->delete();
 
             DB::commit();

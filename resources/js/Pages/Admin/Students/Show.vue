@@ -28,6 +28,13 @@ const formatDate = (date) => {
     if (!date) return '-'
     return new Date(date).toLocaleDateString()
 }
+
+const getImageUrl = () => {
+    const url = student.user?.image_url
+    if (!url) return null
+    if (url.startsWith('http')) return url
+    return `/storage/${url}`
+}
 </script>
 
 <template>
@@ -57,8 +64,14 @@ const formatDate = (date) => {
                     <h2 class="text-lg font-semibold">Student Information</h2>
 
                     <div class="flex items-center space-x-3">
-                        <div class="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center">
-                            <span class="text-2xl font-bold text-gray-500">
+                        <div class="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
+                            <img
+                                v-if="getImageUrl()"
+                                :src="getImageUrl()"
+                                :alt="student.user.full_name"
+                                class="w-full h-full object-cover"
+                            />
+                            <span v-else class="text-2xl font-bold text-gray-500">
                                 {{ student.user.full_name.charAt(0) }}
                             </span>
                         </div>

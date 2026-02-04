@@ -5,7 +5,7 @@ import AdminLayout from '@/Layouts/AdminLayout.vue'
 import DataTable from '@/Components/DataTable.vue'
 import Badge from '@/Components/Badge.vue'
 import ConfirmModal from '@/Components/ConfirmModal.vue'
-import { Plus, Pencil, Trash2, Search, Eye } from 'lucide-vue-next'
+import { Plus, Pencil, Trash2, Search, Eye, User } from 'lucide-vue-next'
 
 const props = defineProps({
     items: Object,
@@ -20,12 +20,19 @@ const deleteModal = ref(false)
 const adminToDelete = ref(null)
 
 const columns = [
-    { key: 'user.full_name', label: 'Name' },
+    { key: 'admin', label: 'Admin' },
     { key: 'user.email', label: 'Email' },
     { key: 'department', label: 'Department' },
     { key: 'user.status', label: 'Status' },
-    { key: 'actions', label: 'Actions', class: 'w-24' },
+    { key: 'actions', label: 'Actions', class: 'w-32' },
 ]
+
+const getImageUrl = (row) => {
+    const url = row.user?.image_url
+    if (!url) return null
+    if (url.startsWith('http')) return url
+    return `/storage/${url}`
+}
 
 const applyFilters = () => {
     router.get('/admin/admins', {
@@ -102,6 +109,23 @@ const getStatusVariant = (status) => {
 
             <!-- Table -->
             <DataTable :columns="columns" :data="admins?.data || []" :pagination="admins">
+                <template #admin="{ row }">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0">
+                            <img
+                                v-if="getImageUrl(row)"
+                                :src="getImageUrl(row)"
+                                :alt="row.user?.full_name"
+                                class="w-full h-full object-cover"
+                            />
+                            <User v-else class="w-5 h-5 text-gray-400" />
+                        </div>
+                        <div>
+                            <p class="font-medium text-gray-900">{{ row.user?.full_name }}</p>
+                            <p class="text-sm text-gray-500">{{ row.user?.username }}</p>
+                        </div>
+                    </div>
+                </template>
                 <template #user.status="{ value }">
                     <Badge :variant="getStatusVariant(value)">{{ value }}</Badge>
                 </template>
