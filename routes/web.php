@@ -39,28 +39,39 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Admin Users (requires admins.* permissions)
     Route::middleware('permission:admins.view')->group(function () {
         Route::get('/admins', [AdminUserController::class, 'index'])->name('admins.index');
-        Route::get('/admins/{admin}', [AdminUserController::class, 'show'])->name('admins.show');
     });
     Route::middleware('permission:admins.create')->group(function () {
-        Route::get('/admins/create', [AdminUserController::class, 'create'])->name('admins.create');
-        Route::post('/admins', [AdminUserController::class, 'store'])->name('admins.store');
+        Route::get('/admins/create', [AdminUserController::class, 'create'])
+            ->middleware('permission:admins.create')
+            ->name('admins.create');
+
+        Route::post('/admins', [AdminUserController::class, 'store'])
+            ->middleware('permission:admins.create')
+            ->name('admins.store');
+    });
+    Route::middleware('permission:admins.view')->group(function () {
+        Route::get('/admins/{admin}', [AdminUserController::class, 'show'])->name('admins.show');
     });
     Route::middleware('permission:admins.edit')->group(function () {
-        Route::get('/admins/{admin}/edit', [AdminUserController::class, 'edit'])->name('admins.edit');
-        Route::put('/admins/{admin}', [AdminUserController::class, 'update'])->name('admins.update');
+        Route::get('/admins/{admin}/edit', [AdminUserController::class, 'edit'])
+            ->name('admins.edit');
+        Route::put('/admins/{admin}', [AdminUserController::class, 'update'])
+            ->name('admins.update');
     });
     Route::delete('/admins/{admin}', [AdminUserController::class, 'destroy'])
         ->middleware('permission:admins.delete')
         ->name('admins.destroy');
 
-    // Students (requires students.* permissions)
+    // Students (requires students.* permissions) — create before {student} so /students/create isn't matched as ID
     Route::middleware('permission:students.view')->group(function () {
         Route::get('/students', [StudentController::class, 'index'])->name('students.index');
-        Route::get('/students/{student}', [StudentController::class, 'show'])->name('students.show');
     });
     Route::middleware('permission:students.create')->group(function () {
         Route::get('/students/create', [StudentController::class, 'create'])->name('students.create');
         Route::post('/students', [StudentController::class, 'store'])->name('students.store');
+    });
+    Route::middleware('permission:students.view')->group(function () {
+        Route::get('/students/{student}', [StudentController::class, 'show'])->name('students.show');
     });
     Route::middleware('permission:students.edit')->group(function () {
         Route::get('/students/{student}/edit', [StudentController::class, 'edit'])->name('students.edit');
