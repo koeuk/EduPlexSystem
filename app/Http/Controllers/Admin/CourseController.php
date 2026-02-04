@@ -125,22 +125,22 @@ class CourseController extends Controller
             'instructor_name' => ['nullable', 'string', 'max:255'],
             'enrollment_limit' => ['nullable', 'integer', 'min:1'],
             'is_featured' => ['boolean'],
-            'thumbnail' => ['nullable', 'image', 'max:2048'],
-            'image_url' => ['nullable', 'string', 'max:500'],
+            'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:2048'],
         ]);
 
         DB::beginTransaction();
 
         try {
-            $thumbnail = null;
-            if ($request->hasFile('thumbnail')) {
-                $thumbnail = $request->file('thumbnail')->store('course-thumbnails', 'public');
+            // Handle image upload
+            $imageUrl = null;
+            if ($request->hasFile('image')) {
+                $imageUrl = $request->file('image')->store('courses', 'public');
             }
+            unset($validated['image']);
 
             Course::create([
                 ...$validated,
-                'thumbnail' => $thumbnail,
-                'image_url' => $validated['image_url'] ?? null,
+                'image_url' => $imageUrl,
                 'admin_id' => auth()->user()->admin->id,
                 'status' => 'draft',
             ]);
@@ -188,19 +188,21 @@ class CourseController extends Controller
             'enrollment_limit' => ['nullable', 'integer', 'min:1'],
             'is_featured' => ['boolean'],
             'status' => ['nullable', 'in:draft,published,archived'],
-            'thumbnail' => ['nullable', 'image', 'max:2048'],
-            'image_url' => ['nullable', 'string', 'max:500'],
+            'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:2048'],
         ]);
 
         DB::beginTransaction();
 
         try {
-            if ($request->hasFile('thumbnail')) {
-                if ($course->thumbnail) {
-                    Storage::disk('public')->delete($course->thumbnail);
+            // Handle image upload
+            if ($request->hasFile('image')) {
+                // Delete old image if exists
+                if ($course->image_url) {
+                    Storage::disk('public')->delete($course->image_url);
                 }
-                $validated['thumbnail'] = $request->file('thumbnail')->store('course-thumbnails', 'public');
+                $validated['image_url'] = $request->file('image')->store('courses', 'public');
             }
+            unset($validated['image']);
 
             $course->update($validated);
 
@@ -222,8 +224,8 @@ class CourseController extends Controller
         DB::beginTransaction();
 
         try {
-            if ($course->thumbnail) {
-                Storage::disk('public')->delete($course->thumbnail);
+            if ($course->image_url) {
+                Storage::disk('public')->delete($course->image_url);
             }
             $course->delete();
 

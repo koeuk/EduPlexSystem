@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\MediaLibrary\HasMedia;
@@ -71,6 +72,14 @@ class Course extends Model implements HasMedia
 
     public function getThumbnailUrlAttribute(): ?string
     {
+        // First check for image_url stored in database
+        if ($this->image_url) {
+            if (str_starts_with($this->image_url, 'http')) {
+                return $this->image_url;
+            }
+            return '/storage/' . $this->image_url;
+        }
+        // Fallback to media library
         return $this->getFirstMediaUrl('thumbnail', 'thumb') ?: null;
     }
 

@@ -84,6 +84,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Categories (requires categories.* permissions)
     Route::middleware('permission:categories.view')->group(function () {
         Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
+        Route::get('/categories/{category}', [CategoryController::class, 'show'])->name('categories.show');
     });
     Route::middleware('permission:categories.create')->group(function () {
         Route::get('/categories/create', [CategoryController::class, 'create'])->name('categories.create');

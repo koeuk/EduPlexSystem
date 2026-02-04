@@ -1,0 +1,223 @@
+<script setup>
+import { ref } from 'vue'
+import FormInput from '@/Components/FormInput.vue'
+import FormSelect from '@/Components/FormSelect.vue'
+import { BookOpen, Settings, Upload } from 'lucide-vue-next'
+
+const props = defineProps({
+    modelValue: Object,
+    categories: Array,
+    levelOptions: Array,
+    statusOptions: Array,
+    isEdit: {
+        type: Boolean,
+        default: false
+    }
+})
+
+const emit = defineEmits(['update:modelValue', 'imageChange'])
+
+const imagePreview = ref(null)
+
+const featuredOptions = [
+    { value: true, label: 'Yes' },
+    { value: false, label: 'No' },
+]
+
+const handleImageChange = (e) => {
+    const file = e.target.files[0]
+    if (file) {
+        emit('imageChange', file)
+        // Create preview
+        const reader = new FileReader()
+        reader.onload = (e) => {
+            imagePreview.value = e.target.result
+        }
+        reader.readAsDataURL(file)
+    }
+}
+
+const triggerImageInput = () => {
+    document.getElementById('course-image-upload').click()
+}
+
+// Get current image URL for preview
+const getCurrentImage = () => {
+    if (imagePreview.value) return imagePreview.value
+    if (props.modelValue.image_url) {
+        if (props.modelValue.image_url.startsWith('http')) {
+            return props.modelValue.image_url
+        }
+        return `/storage/${props.modelValue.image_url}`
+    }
+    if (props.modelValue.thumbnail_url) {
+        return props.modelValue.thumbnail_url
+    }
+    return null
+}
+</script>
+
+<template>
+    <div class="flex gap-6">
+        <!-- Left Column - Form Fields -->
+        <div class="flex-1 space-y-6">
+            <!-- Basic Information Section -->
+            <div>
+                <div class="flex items-center gap-2 mb-4">
+                    <BookOpen class="w-5 h-5 text-gray-600" />
+                    <h3 class="font-semibold text-gray-900">Basic Information</h3>
+                </div>
+
+                <div class="space-y-4">
+                    <FormInput
+                        :modelValue="modelValue.course_name"
+                        @update:modelValue="$emit('update:modelValue', { ...modelValue, course_name: $event })"
+                        label="Course Name"
+                        placeholder="Enter course name"
+                        :error="modelValue.errors?.course_name"
+                        required
+                    />
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <FormInput
+                            :modelValue="modelValue.course_code"
+                            @update:modelValue="$emit('update:modelValue', { ...modelValue, course_code: $event })"
+                            label="Course Code"
+                            placeholder="e.g., CS101"
+                            :error="modelValue.errors?.course_code"
+                            required
+                        />
+                        <FormSelect
+                            :modelValue="modelValue.category_id"
+                            @update:modelValue="$emit('update:modelValue', { ...modelValue, category_id: $event })"
+                            label="Category"
+                            :options="categories?.map(c => ({ value: c.id, label: c.category_name }))"
+                            placeholder="Select category"
+                            :error="modelValue.errors?.category_id"
+                        />
+                    </div>
+
+                    <FormInput
+                        :modelValue="modelValue.description"
+                        @update:modelValue="$emit('update:modelValue', { ...modelValue, description: $event })"
+                        label="Description"
+                        type="textarea"
+                        placeholder="Describe what students will learn..."
+                        :error="modelValue.errors?.description"
+                    />
+
+                    <FormSelect
+                        v-if="isEdit && statusOptions"
+                        :modelValue="modelValue.status"
+                        @update:modelValue="$emit('update:modelValue', { ...modelValue, status: $event })"
+                        label="Status"
+                        :options="statusOptions"
+                        :error="modelValue.errors?.status"
+                    />
+                </div>
+            </div>
+
+            <!-- Course Details Section -->
+            <div>
+                <div class="flex items-center gap-2 mb-4">
+                    <Settings class="w-5 h-5 text-gray-600" />
+                    <h3 class="font-semibold text-gray-900">Course Details</h3>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <FormSelect
+                            :modelValue="modelValue.level"
+                            @update:modelValue="$emit('update:modelValue', { ...modelValue, level: $event })"
+                            label="Level"
+                            :options="levelOptions"
+                            :error="modelValue.errors?.level"
+                            required
+                        />
+                        <FormInput
+                            :modelValue="modelValue.instructor_name"
+                            @update:modelValue="$emit('update:modelValue', { ...modelValue, instructor_name: $event })"
+                            label="Instructor Name"
+                            placeholder="Instructor name"
+                            :error="modelValue.errors?.instructor_name"
+                        />
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-4">
+                        <FormInput
+                            :modelValue="modelValue.price"
+                            @update:modelValue="$emit('update:modelValue', { ...modelValue, price: $event })"
+                            label="Price ($)"
+                            type="number"
+                            placeholder="0.00"
+                            :error="modelValue.errors?.price"
+                            required
+                        />
+                        <FormInput
+                            :modelValue="modelValue.duration_hours"
+                            @update:modelValue="$emit('update:modelValue', { ...modelValue, duration_hours: $event })"
+                            label="Duration (hours)"
+                            type="number"
+                            placeholder="Hours"
+                            :error="modelValue.errors?.duration_hours"
+                        />
+                        <FormInput
+                            :modelValue="modelValue.enrollment_limit"
+                            @update:modelValue="$emit('update:modelValue', { ...modelValue, enrollment_limit: $event })"
+                            label="Enrollment Limit"
+                            type="number"
+                            placeholder="Unlimited"
+                            :error="modelValue.errors?.enrollment_limit"
+                        />
+                    </div>
+
+                    <FormSelect
+                        :modelValue="modelValue.is_featured"
+                        @update:modelValue="$emit('update:modelValue', { ...modelValue, is_featured: $event })"
+                        label="Featured Course"
+                        :options="featuredOptions"
+                        :error="modelValue.errors?.is_featured"
+                    />
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column - Image Upload -->
+        <div class="w-72 shrink-0">
+            <div class="sticky top-0">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Featured Image</label>
+                <div
+                    @click="triggerImageInput"
+                    class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-primary-400 hover:bg-primary-50 transition-colors aspect-video flex flex-col items-center justify-center"
+                >
+                    <template v-if="getCurrentImage()">
+                        <img
+                            :src="getCurrentImage()"
+                            alt="Preview"
+                            class="max-h-32 max-w-full object-contain rounded"
+                        />
+                        <p class="mt-2 text-xs text-gray-500">Click to change</p>
+                    </template>
+                    <template v-else>
+                        <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+                            <Upload class="w-6 h-6 text-gray-400" />
+                        </div>
+                        <p class="text-sm font-medium text-gray-700">Click to upload image</p>
+                        <p class="text-xs text-gray-500 mt-1">PNG, JPG, GIF up to 2MB</p>
+                    </template>
+                </div>
+                <input
+                    id="course-image-upload"
+                    type="file"
+                    accept="image/*"
+                    @change="handleImageChange"
+                    class="hidden"
+                />
+                <p v-if="modelValue.errors?.image" class="mt-2 text-sm text-red-500">
+                    {{ modelValue.errors.image }}
+                </p>
+                <p class="mt-2 text-xs text-gray-500">Course thumbnail image</p>
+            </div>
+        </div>
+    </div>
+</template>

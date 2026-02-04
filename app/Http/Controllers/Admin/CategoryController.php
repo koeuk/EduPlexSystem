@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 use Spatie\QueryBuilder\AllowedFilter;
@@ -21,6 +22,7 @@ class CategoryController extends Controller
         try {
             $items = QueryBuilder::for(Category::class)
                 ->select('*')
+                ->with(['courses:id,category_id,course_name'])
                 ->withCount('courses')
                 ->allowedFilters([
                     AllowedFilter::partial('category_name'),
@@ -47,6 +49,25 @@ class CategoryController extends Controller
         }
     }
 
+    public function show(Category $category): Response
+    {
+        $category->load(['courses' => function ($query) {
+            $query->withCount('enrollments')->latest()->limit(10);
+        }]);
+        $category->loadCount('courses');
+
+        $stats = [
+            'totalCourses' => $category->courses_count,
+            'activeCourses' => $category->courses()->where('status', 'published')->count(),
+            'totalEnrollments' => $category->courses()->withCount('enrollments')->get()->sum('enrollments_count'),
+        ];
+
+        return Inertia::render('Admin/Categories/Show', [
+            'item' => $category,
+            'stats' => $stats,
+        ]);
+    }
+
     public function create(): Response
     {
         return Inertia::render('Admin/Categories/Create');
@@ -58,13 +79,19 @@ class CategoryController extends Controller
             'category_name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'icon' => ['nullable', 'string', 'max:100'],
-            'image_url' => ['nullable', 'string', 'max:500'],
+            'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:2048'],
             'is_active' => ['boolean'],
         ]);
 
         DB::beginTransaction();
 
         try {
+            // Handle image upload
+            if ($request->hasFile('image')) {
+                $validated['image_url'] = $request->file('image')->store('categories', 'public');
+            }
+            unset($validated['image']);
+
             Category::create($validated);
 
             DB::commit();
@@ -89,13 +116,23 @@ class CategoryController extends Controller
             'category_name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'icon' => ['nullable', 'string', 'max:100'],
-            'image_url' => ['nullable', 'string', 'max:500'],
+            'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:2048'],
             'is_active' => ['boolean'],
         ]);
 
         DB::beginTransaction();
 
         try {
+            // Handle image upload
+            if ($request->hasFile('image')) {
+                // Delete old image if exists
+                if ($category->image_url) {
+                    Storage::disk('public')->delete($category->image_url);
+                }
+                $validated['image_url'] = $request->file('image')->store('categories', 'public');
+            }
+            unset($validated['image']);
+
             $category->update($validated);
 
             DB::commit();
