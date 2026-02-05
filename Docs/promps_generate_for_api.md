@@ -304,9 +304,17 @@ Bearer Token: {{token}} (except verify)
 ### CERTIFICATES FOLDER:
 
 1. **GET /certificates** - List user's certificates
+   Response includes: id, certificate_code, issue_date, verification_url, download_url, course info
+
 2. **GET /certificates/1** - Get certificate detail
+   Response includes: certificate details, student info, course info with category/level/duration
+
 3. **GET /certificates/1/download** - Download certificate PDF
+   Returns: PDF file (A4 landscape) with certificate design
+   Filename: certificate-{code}.pdf
+
 4. **GET /certificates/verify/CERT-ABC123** (No auth) - Verify certificate
+   Response includes: is_valid, certificate_code, issue_date, student_name, course details
 
 ---
 
