@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\CoursePricingType;
+use App\Filters\PriceRangeFilter;
 use App\Filters\UniversalSearchFilter;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
@@ -33,6 +35,8 @@ class CourseController extends Controller
                     AllowedFilter::exact('category_id'),
                     AllowedFilter::exact('level'),
                     AllowedFilter::exact('is_featured'),
+                    AllowedFilter::exact('pricing_type'),
+                    AllowedFilter::custom('price_range', new PriceRangeFilter()),
                     AllowedFilter::custom('search', new UniversalSearchFilter(['course_name', 'course_code', 'instructor_name'])),
                 ])
                 ->allowedSorts(['created_at', 'course_name', 'price', 'enrollments_count'])
@@ -57,6 +61,7 @@ class CourseController extends Controller
                     ['value' => 'intermediate', 'label' => 'Intermediate'],
                     ['value' => 'advanced', 'label' => 'Advanced'],
                 ],
+                'pricingTypeOptions' => CoursePricingType::options(),
             ]);
         } catch (\Exception $e) {
             DB::rollback();
@@ -109,6 +114,7 @@ class CourseController extends Controller
                 ['value' => 'intermediate', 'label' => 'Intermediate'],
                 ['value' => 'advanced', 'label' => 'Advanced'],
             ],
+            'pricingTypeOptions' => CoursePricingType::options(),
         ]);
     }
 
@@ -121,12 +127,18 @@ class CourseController extends Controller
             'category_id' => ['nullable', 'exists:categories,id'],
             'level' => ['required', 'in:beginner,intermediate,advanced'],
             'duration_hours' => ['nullable', 'integer', 'min:1'],
+            'pricing_type' => ['required', Rule::in(CoursePricingType::values())],
             'price' => ['required', 'numeric', 'min:0'],
             'instructor_name' => ['nullable', 'string', 'max:255'],
             'enrollment_limit' => ['nullable', 'integer', 'min:1'],
             'is_featured' => ['boolean'],
             'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:2048'],
         ]);
+
+        // If free pricing, force price to 0
+        if ($validated['pricing_type'] === 'free') {
+            $validated['price'] = 0;
+        }
 
         DB::beginTransaction();
 
@@ -171,6 +183,7 @@ class CourseController extends Controller
                 ['value' => 'published', 'label' => 'Published'],
                 ['value' => 'archived', 'label' => 'Archived'],
             ],
+            'pricingTypeOptions' => CoursePricingType::options(),
         ]);
     }
 
@@ -183,6 +196,7 @@ class CourseController extends Controller
             'category_id' => ['nullable', 'exists:categories,id'],
             'level' => ['required', 'in:beginner,intermediate,advanced'],
             'duration_hours' => ['nullable', 'integer', 'min:1'],
+            'pricing_type' => ['required', Rule::in(CoursePricingType::values())],
             'price' => ['required', 'numeric', 'min:0'],
             'instructor_name' => ['nullable', 'string', 'max:255'],
             'enrollment_limit' => ['nullable', 'integer', 'min:1'],
@@ -190,6 +204,11 @@ class CourseController extends Controller
             'status' => ['nullable', 'in:draft,published,archived'],
             'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:2048'],
         ]);
+
+        // If free pricing, force price to 0
+        if ($validated['pricing_type'] === 'free') {
+            $validated['price'] = 0;
+        }
 
         DB::beginTransaction();
 

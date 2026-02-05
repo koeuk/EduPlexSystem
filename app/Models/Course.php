@@ -24,6 +24,7 @@ class Course extends Model implements HasMedia
         'category_id',
         'level',
         'duration_hours',
+        'pricing_type',
         'price',
         'instructor_name',
         'admin_id',

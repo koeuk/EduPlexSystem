@@ -12,12 +12,16 @@ const props = defineProps({
     categories: Array,
     statusOptions: Array,
     levelOptions: Array,
+    pricingTypeOptions: Array,
     filters: Object,
 })
 
 const search = ref(props.filters?.search || '')
 const categoryFilter = ref(props.filters?.category_id || '')
 const statusFilter = ref(props.filters?.status || '')
+const pricingFilter = ref(props.filters?.pricing_type || '')
+const priceMin = ref(props.filters?.price_min || '')
+const priceMax = ref(props.filters?.price_max || '')
 
 // Delete modal state
 const deleteModal = ref(false)
@@ -50,10 +54,18 @@ const getStatusVariant = (status) => {
 }
 
 const applyFilters = () => {
+    // Build price range filter value
+    let priceRange = undefined
+    if (priceMin.value || priceMax.value) {
+        priceRange = `${priceMin.value || ''},${priceMax.value || ''}`
+    }
+
     router.get('/admin/courses', {
-        search: search.value,
-        category_id: categoryFilter.value,
-        status: statusFilter.value,
+        'filter[search]': search.value || undefined,
+        'filter[category_id]': categoryFilter.value || undefined,
+        'filter[status]': statusFilter.value || undefined,
+        'filter[pricing_type]': pricingFilter.value || undefined,
+        'filter[price_range]': priceRange,
     }, { preserveState: true })
 }
 
@@ -72,12 +84,17 @@ const deleteCourse = () => {
     })
 }
 
-const formatPrice = (price) => {
-    if (!price || price == 0) return 'Free'
-    return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-    }).format(price)
+const formatPrice = (row) => {
+    if (row.pricing_type === 'free' || (!row.price || row.price == 0)) {
+        return { text: 'Free', isFree: true }
+    }
+    return {
+        text: new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD',
+        }).format(row.price),
+        isFree: false
+    }
 }
 
 const getImageUrl = (row) => {
@@ -107,31 +124,70 @@ const getImageUrl = (row) => {
 
             <!-- Filters -->
             <div class="card p-4">
-                <div class="flex flex-col sm:flex-row gap-4">
-                    <div class="flex-1 relative">
-                        <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                        <input
-                            v-model="search"
-                            type="text"
-                            placeholder="Search courses..."
-                            class="input pl-10"
-                            @keyup.enter="applyFilters"
-                        />
+                <div class="flex flex-col gap-4">
+                    <!-- Row 1: Search and Category -->
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <div class="flex-1 relative">
+                            <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                            <input
+                                v-model="search"
+                                type="text"
+                                placeholder="Search courses..."
+                                class="input pl-10"
+                                @keyup.enter="applyFilters"
+                            />
+                        </div>
+                        <select v-model="categoryFilter" class="input w-full sm:w-48">
+                            <option value="">All Categories</option>
+                            <option v-for="cat in categories" :key="cat.id" :value="cat.id">
+                                {{ cat.category_name }}
+                            </option>
+                        </select>
+                        <select v-model="statusFilter" class="input w-full sm:w-40">
+                            <option v-for="opt in filterStatusOptions" :key="opt.value" :value="opt.value">
+                                {{ opt.label }}
+                            </option>
+                        </select>
                     </div>
-                    <select v-model="categoryFilter" class="input w-full sm:w-48">
-                        <option value="">All Categories</option>
-                        <option v-for="cat in categories" :key="cat.id" :value="cat.id">
-                            {{ cat.category_name }}
-                        </option>
-                    </select>
-                    <select v-model="statusFilter" class="input w-full sm:w-40">
-                        <option v-for="opt in filterStatusOptions" :key="opt.value" :value="opt.value">
-                            {{ opt.label }}
-                        </option>
-                    </select>
-                    <button @click="applyFilters" class="btn btn-secondary btn-md">
-                        Search
-                    </button>
+                    <!-- Row 2: Pricing filters -->
+                    <div class="flex flex-col sm:flex-row gap-4 items-end">
+                        <select v-model="pricingFilter" class="input w-full sm:w-32">
+                            <option value="">All Pricing</option>
+                            <option v-for="opt in pricingTypeOptions" :key="opt.value" :value="opt.value">
+                                {{ opt.label }}
+                            </option>
+                        </select>
+                        <div class="flex items-center gap-2">
+                            <div class="flex flex-col">
+                                <label class="text-xs text-gray-500 mb-1">Min Price</label>
+                                <input
+                                    v-model="priceMin"
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    placeholder="$0"
+                                    class="input w-24"
+                                    @keyup.enter="applyFilters"
+                                />
+                            </div>
+                            <span class="text-gray-400 mt-5">-</span>
+                            <div class="flex flex-col">
+                                <label class="text-xs text-gray-500 mb-1">Max Price</label>
+                                <input
+                                    v-model="priceMax"
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    placeholder="$999"
+                                    class="input w-24"
+                                    @keyup.enter="applyFilters"
+                                />
+                            </div>
+                        </div>
+                        <button @click="applyFilters" class="btn btn-secondary btn-md">
+                            Search
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -159,7 +215,10 @@ const getImageUrl = (row) => {
                     <span class="text-sm">{{ row.admin?.user?.full_name || row.instructor_name || '-' }}</span>
                 </template>
                 <template #price="{ row }">
-                    <span class="text-sm font-medium">{{ formatPrice(row.price) }}</span>
+                    <Badge v-if="formatPrice(row).isFree" variant="success">
+                        Free
+                    </Badge>
+                    <span v-else class="text-sm font-medium">{{ formatPrice(row).text }}</span>
                 </template>
                 <template #status="{ row }">
                     <Badge :variant="getStatusVariant(row.status)">

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\CoursePricingType;
 use App\Enums\LessonType;
 use App\Enums\StudentStatus;
 use App\Enums\UserStatus;
@@ -26,6 +27,7 @@ class DataController extends Controller
                 'userStatuses' => UserStatus::options(),
                 'studentStatuses' => StudentStatus::options(),
                 'lessonTypes' => LessonType::options(),
+                'coursePricingTypes' => CoursePricingType::options(),
             ],
         ]);
     }
@@ -95,6 +97,51 @@ class DataController extends Controller
         return response()->json([
             'success' => true,
             'data' => LessonType::options(),
+        ]);
+    }
+
+    /**
+     * Get course pricing type options
+     */
+    public function coursePricingTypes(): JsonResponse
+    {
+        return response()->json([
+            'success' => true,
+            'data' => CoursePricingType::options(),
+        ]);
+    }
+
+    /**
+     * Get course level options
+     */
+    public function courseLevels(): JsonResponse
+    {
+        return response()->json([
+            'success' => true,
+            'data' => [
+                ['value' => 'beginner', 'label' => 'Beginner'],
+                ['value' => 'intermediate', 'label' => 'Intermediate'],
+                ['value' => 'advanced', 'label' => 'Advanced'],
+            ],
+        ]);
+    }
+
+    /**
+     * Get all course filter options
+     */
+    public function courseFilters(): JsonResponse
+    {
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'categories' => $this->getCategoriesData(),
+                'levels' => [
+                    ['value' => 'beginner', 'label' => 'Beginner'],
+                    ['value' => 'intermediate', 'label' => 'Intermediate'],
+                    ['value' => 'advanced', 'label' => 'Advanced'],
+                ],
+                'pricing_types' => CoursePricingType::options(),
+            ],
         ]);
     }
 

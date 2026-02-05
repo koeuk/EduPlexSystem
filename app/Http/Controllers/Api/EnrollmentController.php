@@ -56,6 +56,8 @@ class EnrollmentController extends Controller
                         'image_url' => $enrollment->course->thumbnail_url,
                         'level' => $enrollment->course->level,
                         'duration_hours' => $enrollment->course->duration_hours,
+                        'pricing_type' => $enrollment->course->pricing_type,
+                        'is_free' => $enrollment->course->pricing_type === 'free',
                         'instructor_name' => $enrollment->course->instructor_name,
                         'category' => $enrollment->course->category ? [
                             'id' => $enrollment->course->category->id,
@@ -159,6 +161,8 @@ class EnrollmentController extends Controller
                     'course' => [
                         'id' => $course->id,
                         'course_name' => $course->course_name,
+                        'pricing_type' => $course->pricing_type,
+                        'is_free' => $course->pricing_type === 'free',
                         'price' => $course->price,
                     ],
                 ],
@@ -214,6 +218,8 @@ class EnrollmentController extends Controller
                     'image_url' => $enrollment->course->thumbnail_url,
                     'level' => $enrollment->course->level,
                     'duration_hours' => $enrollment->course->duration_hours,
+                    'pricing_type' => $enrollment->course->pricing_type,
+                    'is_free' => $enrollment->course->pricing_type === 'free',
                     'price' => $enrollment->course->price,
                     'instructor_name' => $enrollment->course->instructor_name,
                     'category' => $enrollment->course->category ? [

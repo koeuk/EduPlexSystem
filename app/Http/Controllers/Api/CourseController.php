@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Filters\PriceRangeFilter;
 use App\Filters\UniversalSearchFilter;
 use App\Http\Controllers\Controller;
 use App\Models\Course;
@@ -21,6 +22,8 @@ class CourseController extends Controller
                 AllowedFilter::exact('category_id'),
                 AllowedFilter::exact('level'),
                 AllowedFilter::exact('is_featured'),
+                AllowedFilter::exact('pricing_type'),
+                AllowedFilter::custom('price_range', new PriceRangeFilter()),
                 AllowedFilter::custom('search', new UniversalSearchFilter([
                     'course_name',
                     'course_code',
@@ -46,6 +49,8 @@ class CourseController extends Controller
                     'image_url' => $course->thumbnail_url,
                     'level' => $course->level,
                     'duration_hours' => $course->duration_hours,
+                    'pricing_type' => $course->pricing_type,
+                    'is_free' => $course->pricing_type === 'free',
                     'price' => $course->price,
                     'instructor_name' => $course->instructor_name,
                     'is_featured' => $course->is_featured,
@@ -111,6 +116,8 @@ class CourseController extends Controller
                 'image_url' => $course->thumbnail_url,
                 'level' => $course->level,
                 'duration_hours' => $course->duration_hours,
+                'pricing_type' => $course->pricing_type,
+                'is_free' => $course->pricing_type === 'free',
                 'price' => $course->price,
                 'instructor_name' => $course->instructor_name,
                 'enrollment_limit' => $course->enrollment_limit,

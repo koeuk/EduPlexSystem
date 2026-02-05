@@ -10,6 +10,7 @@ const props = defineProps({
     categories: Array,
     levelOptions: Array,
     statusOptions: Array,
+    pricingTypeOptions: Array,
 })
 
 const course = props.item
@@ -23,6 +24,7 @@ const form = useForm({
     category_id: course.category_id || '',
     level: course.level || 'beginner',
     duration_hours: course.duration_hours || '',
+    pricing_type: course.pricing_type || (parseFloat(course.price) > 0 ? 'paid' : 'free'),
     price: course.price || 0,
     instructor_name: course.instructor_name || '',
     enrollment_limit: course.enrollment_limit || '',
@@ -75,6 +77,7 @@ const handleFieldUpdate = ({ field, value }) => {
                     :categories="categories"
                     :level-options="levelOptions"
                     :status-options="statusOptions"
+                    :pricing-type-options="pricingTypeOptions"
                     :is-edit="true"
                     @image-change="handleImageChange"
                     @field-update="handleFieldUpdate"

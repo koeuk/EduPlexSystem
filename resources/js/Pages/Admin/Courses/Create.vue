@@ -7,6 +7,7 @@ import { ArrowLeft, Save } from 'lucide-vue-next'
 const props = defineProps({
     categories: Array,
     levelOptions: Array,
+    pricingTypeOptions: Array,
 })
 
 const form = useForm({
@@ -16,6 +17,7 @@ const form = useForm({
     category_id: '',
     level: 'beginner',
     duration_hours: '',
+    pricing_type: 'paid',
     price: 0,
     instructor_name: '',
     enrollment_limit: '',
@@ -70,6 +72,7 @@ const handleFieldUpdate = ({ field, value }) => {
                     v-model="form"
                     :categories="categories"
                     :level-options="levelOptions"
+                    :pricing-type-options="pricingTypeOptions"
                     @image-change="handleImageChange"
                     @field-update="handleFieldUpdate"
                 />

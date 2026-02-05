@@ -44,6 +44,9 @@ Route::prefix('data')->group(function () {
     Route::get('/user-statuses', [DataController::class, 'userStatuses']);
     Route::get('/student-statuses', [DataController::class, 'studentStatuses']);
     Route::get('/lesson-types', [DataController::class, 'lessonTypes']);
+    Route::get('/course-pricing-types', [DataController::class, 'coursePricingTypes']);
+    Route::get('/course-levels', [DataController::class, 'courseLevels']);
+    Route::get('/course-filters', [DataController::class, 'courseFilters']);
     Route::get('/video-config', [VideoController::class, 'config']);
 });
 

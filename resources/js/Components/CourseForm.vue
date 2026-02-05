@@ -1,14 +1,15 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed, watch } from 'vue'
 import FormInput from '@/Components/FormInput.vue'
 import FormSelect from '@/Components/FormSelect.vue'
-import { BookOpen, Settings, Upload } from 'lucide-vue-next'
+import { BookOpen, Settings, Upload, DollarSign } from 'lucide-vue-next'
 
 const props = defineProps({
     modelValue: Object,
     categories: Array,
     levelOptions: Array,
     statusOptions: Array,
+    pricingTypeOptions: Array,
     isEdit: {
         type: Boolean,
         default: false
@@ -28,6 +29,16 @@ const featuredOptions = [
     { value: true, label: 'Yes' },
     { value: false, label: 'No' },
 ]
+
+// Computed property to check if course is free
+const isFree = computed(() => props.modelValue.pricing_type === 'free')
+
+// Watch pricing type changes
+watch(() => props.modelValue.pricing_type, (newValue) => {
+    if (newValue === 'free') {
+        emit('fieldUpdate', { field: 'price', value: 0 })
+    }
+})
 
 const handleImageChange = (e) => {
     const file = e.target.files[0]
@@ -148,16 +159,40 @@ const getCurrentImage = () => {
                         />
                     </div>
 
-                    <div class="grid grid-cols-3 gap-4">
-                        <FormInput
-                            :modelValue="modelValue.price"
-                            @update:modelValue="updateField('price', $event)"
-                            label="Price ($)"
-                            type="number"
-                            placeholder="0.00"
-                            :error="modelValue.errors?.price"
-                            required
-                        />
+                    <!-- Pricing Section -->
+                    <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                        <div class="flex items-center gap-2 mb-3">
+                            <DollarSign class="w-4 h-4 text-gray-600" />
+                            <span class="text-sm font-medium text-gray-700">Pricing</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <FormSelect
+                                :modelValue="modelValue.pricing_type"
+                                @update:modelValue="updateField('pricing_type', $event)"
+                                label="Pricing Type"
+                                :options="pricingTypeOptions"
+                                placeholder="Select pricing type"
+                                :error="modelValue.errors?.pricing_type"
+                                required
+                            />
+                            <FormInput
+                                :modelValue="modelValue.price"
+                                @update:modelValue="updateField('price', $event)"
+                                label="Price ($)"
+                                type="number"
+                                placeholder="0.00"
+                                :error="modelValue.errors?.price"
+                                :disabled="isFree"
+                                :class="{ 'opacity-50': isFree }"
+                                required
+                            />
+                        </div>
+                        <p v-if="isFree" class="mt-2 text-xs text-green-600">
+                            This course is free for all students
+                        </p>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
                         <FormInput
                             :modelValue="modelValue.duration_hours"
                             @update:modelValue="updateField('duration_hours', $event)"
