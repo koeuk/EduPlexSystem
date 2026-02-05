@@ -36,8 +36,6 @@ const getTypeIcon = (type) => {
         video: Play,
         text: FileText,
         quiz: HelpCircle,
-        assignment: File,
-        document: File,
     }
     return icons[type] || FileText
 }
@@ -47,8 +45,6 @@ const getTypeVariant = (type) => {
         video: 'info',
         text: 'gray',
         quiz: 'warning',
-        assignment: 'success',
-        document: 'purple',
     }
     return variants[type] || 'gray'
 }

@@ -476,13 +476,11 @@ class SampleDataSeeder extends Seeder
                 ['title' => 'Understanding the Basics', 'type' => 'video', 'duration' => 20],
                 ['title' => 'Key Terminology', 'type' => 'text', 'duration' => 10],
                 ['title' => 'Fundamental Principles', 'type' => 'video', 'duration' => 25],
-                ['title' => 'Hands-on Practice', 'type' => 'assignment', 'duration' => 30],
             ],
             'Building Projects' => [
                 ['title' => 'Project Setup', 'type' => 'video', 'duration' => 15],
                 ['title' => 'Implementing Features', 'type' => 'video', 'duration' => 35],
                 ['title' => 'Testing Your Code', 'type' => 'text', 'duration' => 20],
-                ['title' => 'Debugging Tips', 'type' => 'document', 'duration' => 15],
             ],
             'Advanced Topics' => [
                 ['title' => 'Performance Optimization', 'type' => 'video', 'duration' => 25],

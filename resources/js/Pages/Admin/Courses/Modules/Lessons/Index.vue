@@ -34,8 +34,6 @@ const getLessonTypeIcon = (type) => {
         video: Video,
         text: BookOpen,
         quiz: HelpCircle,
-        assignment: FileCheck,
-        document: File,
     }
     return icons[type] || FileText
 }
@@ -45,8 +43,6 @@ const getLessonTypeVariant = (type) => {
         video: 'info',
         text: 'success',
         quiz: 'warning',
-        assignment: 'danger',
-        document: 'gray',
     }
     return variants[type] || 'gray'
 }

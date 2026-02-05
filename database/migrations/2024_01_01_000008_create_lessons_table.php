@@ -13,7 +13,7 @@ return new class extends Migration
             $table->foreignId('course_id')->constrained('courses')->cascadeOnDelete();
             $table->foreignId('module_id')->nullable()->constrained('course_modules')->nullOnDelete();
             $table->string('lesson_title');
-            $table->enum('lesson_type', ['video', 'text', 'quiz', 'assignment', 'document'])->default('text');
+            $table->enum('lesson_type', ['video', 'text', 'quiz'])->default('text');
             $table->integer('lesson_order')->default(0);
             $table->text('description')->nullable();
             $table->string('image_url', 500)->nullable();
