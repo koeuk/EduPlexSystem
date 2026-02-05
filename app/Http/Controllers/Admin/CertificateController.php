@@ -113,10 +113,23 @@ class CertificateController extends Controller
 
     public function show(Certificate $certificate): Response
     {
-        $certificate->load(['student.user', 'course']);
+        $certificate->load(['student.user', 'course.category']);
+
+        // Get enrollment data for completion info
+        $enrollment = Enrollment::where('student_id', $certificate->student_id)
+            ->where('course_id', $certificate->course_id)
+            ->first();
 
         return Inertia::render('Admin/Certificates/Show', [
-            'certificate' => $certificate,
+            'certificate' => array_merge($certificate->toArray(), [
+                'is_valid' => true, // Certificate exists means valid
+                'certificate_url' => $certificate->certificate_url,
+            ]),
+            'enrollment' => $enrollment ? [
+                'completion_date' => $enrollment->completion_date,
+                'progress_percentage' => $enrollment->progress_percentage,
+                'enrollment_date' => $enrollment->enrollment_date,
+            ] : null,
         ]);
     }
 
