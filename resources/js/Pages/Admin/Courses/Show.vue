@@ -93,7 +93,7 @@ const getImageUrl = () => {
                                 <div class="flex flex-wrap gap-4 text-sm text-gray-500">
                                     <span class="flex items-center gap-1">
                                         <Users class="w-4 h-4" />
-                                        {{ enrollmentsCount || 0 }} students
+                                        {{ stats?.enrollmentsCount || course.enrollments_count || 0 }} students
                                     </span>
                                     <span class="flex items-center gap-1">
                                         <Clock class="w-4 h-4" />
@@ -101,7 +101,7 @@ const getImageUrl = () => {
                                     </span>
                                     <span class="flex items-center gap-1">
                                         <Star class="w-4 h-4" />
-                                        {{ averageRating?.toFixed(1) || 'N/A' }}
+                                        {{ stats?.averageRating?.toFixed(1) || course.average_rating?.toFixed(1) || 'N/A' }}
                                     </span>
                                 </div>
                             </div>

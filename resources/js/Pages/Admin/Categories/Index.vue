@@ -82,6 +82,10 @@ const handleCreateImageChange = (file) => {
     createForm.image = file
 }
 
+const handleCreateFieldUpdate = ({ field, value }) => {
+    createForm[field] = value
+}
+
 // Edit modal functions
 const openEditModal = (category) => {
     categoryToEdit.value = category
@@ -111,6 +115,10 @@ const submitEdit = () => {
 
 const handleEditImageChange = (file) => {
     editForm.image = file
+}
+
+const handleEditFieldUpdate = ({ field, value }) => {
+    editForm[field] = value
 }
 
 // Delete modal functions
@@ -177,15 +185,7 @@ const deleteCategory = () => {
                     <span class="text-sm text-gray-500 line-clamp-2">{{ value || '-' }}</span>
                 </template>
                 <template #courses_count="{ row }">
-                    <div v-if="row.courses && row.courses.length > 0" class="space-y-1">
-                        <div v-for="course in row.courses.slice(0, 3)" :key="course.id" class="text-sm text-gray-600 truncate max-w-48">
-                            {{ course.course_name }}
-                        </div>
-                        <span v-if="row.courses.length > 3" class="text-xs text-gray-400">
-                            +{{ row.courses.length - 3 }} more
-                        </span>
-                    </div>
-                    <span v-else class="text-sm text-gray-400">-</span>
+                    <span class="text-sm text-gray-600">{{ row.courses_count || 0 }}</span>
                 </template>
                 <template #is_active="{ value }">
                     <Badge :variant="value ? 'success' : 'gray'">
@@ -219,7 +219,7 @@ const deleteCategory = () => {
             @close="closeCreateModal"
             @submit="submitCreate"
         >
-            <CategoryForm v-model="createForm" @image-change="handleCreateImageChange" />
+            <CategoryForm v-model="createForm" @image-change="handleCreateImageChange" @field-update="handleCreateFieldUpdate" />
         </FormModal>
 
         <!-- Edit Modal -->
@@ -233,7 +233,7 @@ const deleteCategory = () => {
             @close="closeEditModal"
             @submit="submitEdit"
         >
-            <CategoryForm v-model="editForm" @image-change="handleEditImageChange" />
+            <CategoryForm v-model="editForm" @image-change="handleEditImageChange" @field-update="handleEditFieldUpdate" />
         </FormModal>
 
         <!-- Delete Confirmation -->

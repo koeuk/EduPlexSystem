@@ -6,7 +6,12 @@ const props = defineProps({
     modelValue: Object,
 })
 
-const emit = defineEmits(['update:modelValue'])
+const emit = defineEmits(['update:modelValue', 'fieldUpdate'])
+
+// Helper to update form fields - emit event for parent to handle
+const updateField = (field, value) => {
+    emit('fieldUpdate', { field, value })
+}
 </script>
 
 <template>
@@ -21,7 +26,7 @@ const emit = defineEmits(['update:modelValue'])
             <div class="space-y-4">
                 <FormInput
                     :modelValue="modelValue.module_title"
-                    @update:modelValue="$emit('update:modelValue', { ...modelValue, module_title: $event })"
+                    @update:modelValue="updateField('module_title', $event)"
                     label="Module Title"
                     placeholder="Enter module title"
                     :error="modelValue.errors?.module_title"
@@ -30,7 +35,7 @@ const emit = defineEmits(['update:modelValue'])
 
                 <FormInput
                     :modelValue="modelValue.description"
-                    @update:modelValue="$emit('update:modelValue', { ...modelValue, description: $event })"
+                    @update:modelValue="updateField('description', $event)"
                     label="Description"
                     type="textarea"
                     placeholder="Describe what this module covers..."

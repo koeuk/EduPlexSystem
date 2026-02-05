@@ -4,7 +4,7 @@ import { Head, Link, useForm } from '@inertiajs/vue3'
 import CourseEditLayout from '@/Layouts/CourseEditLayout.vue'
 import FormInput from '@/Components/FormInput.vue'
 import FormSelect from '@/Components/FormSelect.vue'
-import { ArrowLeft, Save, FileText, Settings, Upload, X } from 'lucide-vue-next'
+import { ArrowLeft, Save, FileText, Settings, Upload, X, Video } from 'lucide-vue-next'
 
 const props = defineProps({
     course: Object,
@@ -27,9 +27,12 @@ const form = useForm({
     quiz_id: lesson.quiz_id || '',
     is_mandatory: lesson.is_mandatory || false,
     image: null,
+    video: null,
 })
 
 const imagePreview = ref(null)
+const videoPreview = ref(null)
+const videoFileName = ref(null)
 
 const mandatoryOptions = [
     { value: true, label: 'Yes' },
@@ -69,9 +72,42 @@ const triggerImageInput = () => {
     document.getElementById('lesson-image-upload').click()
 }
 
+const getCurrentVideo = () => {
+    if (videoPreview.value) return videoPreview.value
+    if (lesson.video_url) {
+        if (lesson.video_url.startsWith('http')) {
+            return lesson.video_url
+        }
+        return `/storage/${lesson.video_url}`
+    }
+    return null
+}
+
+const handleVideoChange = (e) => {
+    const file = e.target.files[0]
+    if (file) {
+        form.video = file
+        videoFileName.value = file.name
+        const url = URL.createObjectURL(file)
+        videoPreview.value = url
+    }
+}
+
+const removeVideo = () => {
+    form.video = null
+    videoPreview.value = null
+    videoFileName.value = null
+    document.getElementById('lesson-video-upload').value = ''
+}
+
+const triggerVideoInput = () => {
+    document.getElementById('lesson-video-upload').click()
+}
+
 const submit = () => {
     form.post(`/admin/courses/${props.course.id}/modules/${props.module.id}/lessons/${lesson.id}`, {
         preserveScroll: true,
+        forceFormData: true,
     })
 }
 </script>
@@ -174,6 +210,51 @@ const submit = () => {
                             :error="form.errors.content"
                             :rows="8"
                         />
+
+                        <!-- Video Upload for video type -->
+                        <div v-if="form.lesson_type === 'video'">
+                            <label class="label block mb-1.5">Lesson Video</label>
+                            <div
+                                @click="triggerVideoInput"
+                                class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-primary-400 hover:bg-primary-50 transition-colors"
+                            >
+                                <template v-if="getCurrentVideo()">
+                                    <div class="relative">
+                                        <video
+                                            :src="getCurrentVideo()"
+                                            class="max-h-48 max-w-full mx-auto rounded"
+                                            controls
+                                            @click.stop
+                                        />
+                                        <button
+                                            type="button"
+                                            @click.stop="removeVideo"
+                                            class="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
+                                        >
+                                            <X class="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                    <p class="mt-2 text-xs text-gray-500">{{ videoFileName || 'Current video' }} - Click to change</p>
+                                </template>
+                                <template v-else>
+                                    <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                        <Video class="w-6 h-6 text-gray-400" />
+                                    </div>
+                                    <p class="text-sm font-medium text-gray-700">Click to upload video</p>
+                                    <p class="text-xs text-gray-500 mt-1">MP4, WebM, OGG up to 512MB</p>
+                                </template>
+                            </div>
+                            <input
+                                id="lesson-video-upload"
+                                type="file"
+                                accept="video/mp4,video/webm,video/ogg"
+                                @change="handleVideoChange"
+                                class="hidden"
+                            />
+                            <p v-if="form.errors.video" class="mt-2 text-sm text-red-500">
+                                {{ form.errors.video }}
+                            </p>
+                        </div>
 
                         <!-- Video duration for video type -->
                         <FormInput

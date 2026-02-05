@@ -8,7 +8,12 @@ const props = defineProps({
     modelValue: Object,
 })
 
-const emit = defineEmits(['update:modelValue', 'imageChange'])
+const emit = defineEmits(['update:modelValue', 'imageChange', 'fieldUpdate'])
+
+// Helper to update form fields - emit event for parent to handle
+const updateField = (field, value) => {
+    emit('fieldUpdate', { field, value })
+}
 
 const imagePreview = ref(null)
 
@@ -52,7 +57,7 @@ const getCurrentImage = () => {
     if (imagePreview.value) return imagePreview.value
     if (props.modelValue.image_url) {
         // Check if it's already a full URL or a storage path
-        if (props.modelValue.image_url.startsWith('http')) {
+        if (props.modelValue.image_url.startsWith('http') || props.modelValue.image_url.startsWith('/storage/')) {
             return props.modelValue.image_url
         }
         return `/storage/${props.modelValue.image_url}`
@@ -75,7 +80,7 @@ const getCurrentImage = () => {
                 <div class="space-y-4">
                     <FormInput
                         :modelValue="modelValue.category_name"
-                        @update:modelValue="$emit('update:modelValue', { ...modelValue, category_name: $event })"
+                        @update:modelValue="updateField('category_name', $event)"
                         label="Category Name"
                         placeholder="Enter category name"
                         :error="modelValue.errors?.category_name"
@@ -84,7 +89,7 @@ const getCurrentImage = () => {
 
                     <FormInput
                         :modelValue="modelValue.description"
-                        @update:modelValue="$emit('update:modelValue', { ...modelValue, description: $event })"
+                        @update:modelValue="updateField('description', $event)"
                         label="Description"
                         type="textarea"
                         placeholder="Describe this category..."
@@ -94,7 +99,7 @@ const getCurrentImage = () => {
                     <div class="grid grid-cols-2 gap-4">
                         <FormSelect
                             :modelValue="modelValue.icon"
-                            @update:modelValue="$emit('update:modelValue', { ...modelValue, icon: $event })"
+                            @update:modelValue="updateField('icon', $event)"
                             label="Icon"
                             :options="iconOptions"
                             placeholder="Select icon"
@@ -103,7 +108,7 @@ const getCurrentImage = () => {
 
                         <FormSelect
                             :modelValue="modelValue.is_active"
-                            @update:modelValue="$emit('update:modelValue', { ...modelValue, is_active: $event })"
+                            @update:modelValue="updateField('is_active', $event)"
                             label="Status"
                             :options="statusOptions"
                             :error="modelValue.errors?.is_active"

@@ -32,6 +32,10 @@ const submit = () => {
 const handleImageChange = (file) => {
     form.image = file
 }
+
+const handleFieldUpdate = ({ field, value }) => {
+    form[field] = value
+}
 </script>
 
 <template>
@@ -67,6 +71,7 @@ const handleImageChange = (file) => {
                     :categories="categories"
                     :level-options="levelOptions"
                     @image-change="handleImageChange"
+                    @field-update="handleFieldUpdate"
                 />
             </form>
         </div>

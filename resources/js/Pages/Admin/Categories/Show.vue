@@ -33,6 +33,13 @@ const formatDate = (date) => {
     if (!date) return '-'
     return new Date(date).toLocaleDateString()
 }
+
+const getCourseImageUrl = (course) => {
+    const url = course.thumbnail_url || course.image_url
+    if (!url) return null
+    if (url.startsWith('http')) return url
+    return `/storage/${url}`
+}
 </script>
 
 <template>
@@ -105,7 +112,7 @@ const formatDate = (date) => {
                                 class="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                                 <div class="flex items-center gap-4">
                                     <div class="w-16 h-12 bg-gray-200 rounded overflow-hidden flex-shrink-0">
-                                        <img v-if="course.thumbnail_url" :src="course.thumbnail_url" :alt="course.course_name"
+                                        <img v-if="getCourseImageUrl(course)" :src="getCourseImageUrl(course)" :alt="course.course_name"
                                             class="w-full h-full object-cover" />
                                         <div v-else class="w-full h-full flex items-center justify-center">
                                             <BookOpen class="w-6 h-6 text-gray-400" />

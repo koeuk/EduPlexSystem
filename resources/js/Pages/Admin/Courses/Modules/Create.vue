@@ -18,6 +18,10 @@ const submit = () => {
         preserveScroll: true,
     })
 }
+
+const handleFieldUpdate = ({ field, value }) => {
+    form[field] = value
+}
 </script>
 
 <template>
@@ -48,7 +52,7 @@ const submit = () => {
 
             <!-- Form -->
             <form @submit.prevent="submit" class="card p-6">
-                <ModuleForm v-model="form" />
+                <ModuleForm v-model="form" @field-update="handleFieldUpdate" />
             </form>
         </div>
     </CourseEditLayout>

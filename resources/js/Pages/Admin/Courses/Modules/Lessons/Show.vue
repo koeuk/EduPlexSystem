@@ -2,7 +2,7 @@
 import { Head, Link } from '@inertiajs/vue3'
 import CourseEditLayout from '@/Layouts/CourseEditLayout.vue'
 import Badge from '@/Components/Badge.vue'
-import { ArrowLeft, Pencil, Video, BookOpen, HelpCircle, FileCheck, File, Clock, CheckCircle, XCircle, Image } from 'lucide-vue-next'
+import { ArrowLeft, Pencil, Video, BookOpen, HelpCircle, Clock, CheckCircle, XCircle, Image } from 'lucide-vue-next'
 
 const props = defineProps({
     course: Object,
@@ -17,10 +17,8 @@ const getLessonTypeIcon = (type) => {
         video: Video,
         text: BookOpen,
         quiz: HelpCircle,
-        assignment: FileCheck,
-        document: File,
     }
-    return icons[type] || File
+    return icons[type] || BookOpen
 }
 
 const getLessonTypeVariant = (type) => {
@@ -28,8 +26,6 @@ const getLessonTypeVariant = (type) => {
         video: 'info',
         text: 'success',
         quiz: 'warning',
-        assignment: 'danger',
-        document: 'gray',
     }
     return variants[type] || 'gray'
 }
@@ -38,6 +34,12 @@ const getImageUrl = () => {
     if (!lesson.image_url) return null
     if (lesson.image_url.startsWith('http')) return lesson.image_url
     return `/storage/${lesson.image_url}`
+}
+
+const getVideoUrl = () => {
+    if (!lesson.video_url) return null
+    if (lesson.video_url.startsWith('http')) return lesson.video_url
+    return `/storage/${lesson.video_url}`
 }
 </script>
 
@@ -67,6 +69,22 @@ const getImageUrl = () => {
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <!-- Main Content -->
                 <div class="lg:col-span-2 space-y-6">
+                    <!-- Video Player -->
+                    <div v-if="lesson.lesson_type === 'video' && getVideoUrl()" class="card p-6">
+                        <h3 class="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                            <Video class="w-5 h-5 text-gray-600" />
+                            Lesson Video
+                        </h3>
+                        <video
+                            :src="getVideoUrl()"
+                            controls
+                            class="w-full rounded-lg bg-black"
+                            preload="metadata"
+                        >
+                            Your browser does not support the video tag.
+                        </video>
+                    </div>
+
                     <!-- Basic Info Card -->
                     <div class="card p-6">
                         <h3 class="font-semibold text-gray-900 mb-4">Lesson Information</h3>

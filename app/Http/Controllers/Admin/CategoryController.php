@@ -23,7 +23,6 @@ class CategoryController extends Controller
         try {
             $items = QueryBuilder::for(Category::class)
                 ->select('*')
-                ->with(['courses:id,category_id,course_name'])
                 ->withCount('courses')
                 ->allowedFilters([
                     AllowedFilter::partial('category_name'),

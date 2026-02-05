@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\LessonType;
 use App\Filters\UniversalSearchFilter;
 use App\Http\Controllers\Controller;
 use App\Models\Course;
 use App\Models\CourseModule;
 use App\Models\Lesson;
 use App\Models\Quiz;
+use App\Services\VideoService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -19,6 +21,9 @@ use Spatie\QueryBuilder\QueryBuilder;
 
 class LessonController extends Controller
 {
+    public function __construct(
+        protected VideoService $videoService
+    ) {}
     public function index(Course $course, CourseModule $module): Response
     {
         if ($module->course_id !== $course->id) {
@@ -111,13 +116,7 @@ class LessonController extends Controller
 
     private function getLessonTypeOptions(): array
     {
-        return [
-            ['value' => 'video', 'label' => 'Video'],
-            ['value' => 'text', 'label' => 'Text'],
-            ['value' => 'quiz', 'label' => 'Quiz'],
-            ['value' => 'assignment', 'label' => 'Assignment'],
-            ['value' => 'document', 'label' => 'Document'],
-        ];
+        return LessonType::options();
     }
 
     public function store(Request $request, Course $course, CourseModule $module)
@@ -128,7 +127,7 @@ class LessonController extends Controller
 
         $validated = $request->validate([
             'lesson_title' => ['required', 'string', 'max:255'],
-            'lesson_type' => ['required', 'in:video,text,quiz,assignment,document'],
+            'lesson_type' => ['required', Rule::in(LessonType::values())],
             'description' => ['nullable', 'string'],
             'content' => ['nullable', 'string'],
             'video_duration' => ['nullable', 'integer', 'min:0'],
@@ -136,6 +135,7 @@ class LessonController extends Controller
             'is_mandatory' => ['boolean'],
             'duration_minutes' => ['nullable', 'integer', 'min:1'],
             'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:2048'],
+            'video' => $this->videoService->getValidationRules(),
         ]);
 
         DB::beginTransaction();
@@ -148,6 +148,12 @@ class LessonController extends Controller
                 $imageUrl = $request->file('image')->store('lessons', 'public');
             }
 
+            $videoUrl = null;
+            if ($request->hasFile('video')) {
+                $videoData = $this->videoService->upload($request->file('video'), 'lessons');
+                $videoUrl = $videoData['path'];
+            }
+
             $module->lessons()->create([
                 'course_id' => $course->id,
                 'lesson_title' => $validated['lesson_title'],
@@ -155,6 +161,7 @@ class LessonController extends Controller
                 'description' => $validated['description'] ?? null,
                 'content' => $validated['content'] ?? null,
                 'image_url' => $imageUrl,
+                'video_url' => $videoUrl,
                 'video_duration' => $validated['video_duration'] ?? null,
                 'quiz_id' => $validated['quiz_id'] ?? null,
                 'is_mandatory' => $validated['is_mandatory'] ?? false,
@@ -180,7 +187,7 @@ class LessonController extends Controller
 
         $validated = $request->validate([
             'lesson_title' => ['required', 'string', 'max:255'],
-            'lesson_type' => ['required', 'in:video,text,quiz,assignment,document'],
+            'lesson_type' => ['required', Rule::in(LessonType::values())],
             'description' => ['nullable', 'string'],
             'content' => ['nullable', 'string'],
             'video_duration' => ['nullable', 'integer', 'min:0'],
@@ -188,6 +195,7 @@ class LessonController extends Controller
             'is_mandatory' => ['boolean'],
             'duration_minutes' => ['nullable', 'integer', 'min:1'],
             'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:2048'],
+            'video' => $this->videoService->getValidationRules(),
         ]);
 
         DB::beginTransaction();
@@ -210,6 +218,14 @@ class LessonController extends Controller
                     Storage::disk('public')->delete($lesson->image_url);
                 }
                 $updateData['image_url'] = $request->file('image')->store('lessons', 'public');
+            }
+
+            if ($request->hasFile('video')) {
+                // Delete old video
+                $this->videoService->delete($lesson->video_url);
+                // Upload new video
+                $videoData = $this->videoService->upload($request->file('video'), 'lessons');
+                $updateData['video_url'] = $videoData['path'];
             }
 
             $lesson->update($updateData);

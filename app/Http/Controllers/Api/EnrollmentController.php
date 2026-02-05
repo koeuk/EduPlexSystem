@@ -52,12 +52,15 @@ class EnrollmentController extends Controller
                         'id' => $enrollment->course->id,
                         'course_name' => $enrollment->course->course_name,
                         'course_code' => $enrollment->course->course_code,
+                        'description' => $enrollment->course->description,
+                        'image_url' => $enrollment->course->thumbnail_url,
                         'level' => $enrollment->course->level,
                         'duration_hours' => $enrollment->course->duration_hours,
-                        'thumbnail' => $enrollment->course->thumbnail_url,
+                        'instructor_name' => $enrollment->course->instructor_name,
                         'category' => $enrollment->course->category ? [
                             'id' => $enrollment->course->category->id,
                             'category_name' => $enrollment->course->category->category_name,
+                            'image_url' => $enrollment->course->category->full_image_url,
                         ] : null,
                     ],
                 ];
@@ -208,19 +211,22 @@ class EnrollmentController extends Controller
                     'course_name' => $enrollment->course->course_name,
                     'course_code' => $enrollment->course->course_code,
                     'description' => $enrollment->course->description,
+                    'image_url' => $enrollment->course->thumbnail_url,
                     'level' => $enrollment->course->level,
                     'duration_hours' => $enrollment->course->duration_hours,
+                    'price' => $enrollment->course->price,
                     'instructor_name' => $enrollment->course->instructor_name,
-                    'thumbnail' => $enrollment->course->thumbnail_url,
                     'category' => $enrollment->course->category ? [
                         'id' => $enrollment->course->category->id,
                         'category_name' => $enrollment->course->category->category_name,
+                        'image_url' => $enrollment->course->category->full_image_url,
                     ] : null,
                     'modules' => $enrollment->course->modules->map(function ($module) {
                         return [
                             'id' => $module->id,
                             'module_title' => $module->module_title,
                             'module_order' => $module->module_order,
+                            'description' => $module->description,
                             'lessons' => $module->lessons->map(function ($lesson) {
                                 $progress = $lesson->lessonProgress->first();
                                 return [
@@ -228,11 +234,16 @@ class EnrollmentController extends Controller
                                     'lesson_title' => $lesson->lesson_title,
                                     'lesson_type' => $lesson->lesson_type,
                                     'lesson_order' => $lesson->lesson_order,
+                                    'description' => $lesson->description,
                                     'duration_minutes' => $lesson->duration_minutes,
+                                    'video_duration' => $lesson->video_duration,
                                     'is_mandatory' => $lesson->is_mandatory,
+                                    'image_url' => $lesson->image_full_url,
+                                    'video_url' => $lesson->video_full_url,
                                     'progress' => $progress ? [
                                         'status' => $progress->status,
                                         'progress_percentage' => $progress->progress_percentage,
+                                        'completed_at' => $progress->completed_at,
                                     ] : null,
                                 ];
                             }),

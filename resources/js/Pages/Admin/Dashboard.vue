@@ -199,8 +199,14 @@ const formatDate = (date) => {
                             class="p-4 flex items-center justify-between"
                         >
                             <div class="flex items-center space-x-3">
-                                <div class="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center">
-                                    <Users class="w-5 h-5 text-primary-600" />
+                                <div class="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center overflow-hidden">
+                                    <img
+                                        v-if="enrollment.student?.user?.image_url"
+                                        :src="enrollment.student.user.image_url.startsWith('http') ? enrollment.student.user.image_url : `/storage/${enrollment.student.user.image_url}`"
+                                        :alt="enrollment.student?.user?.full_name"
+                                        class="w-full h-full object-cover"
+                                    />
+                                    <Users v-else class="w-5 h-5 text-primary-600" />
                                 </div>
                                 <div>
                                     <p class="font-medium text-gray-900">{{ enrollment.student?.user?.full_name }}</p>

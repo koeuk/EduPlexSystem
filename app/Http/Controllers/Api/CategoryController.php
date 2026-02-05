@@ -34,6 +34,8 @@ class CategoryController extends Controller
                     'category_name' => $category->category_name,
                     'description' => $category->description,
                     'icon' => $category->icon,
+                    'image_url' => $category->full_image_url,
+                    'is_active' => $category->is_active,
                     'courses_count' => $category->courses_count,
                 ];
             }),
@@ -60,7 +62,11 @@ class CategoryController extends Controller
                 'category_name' => $category->category_name,
                 'description' => $category->description,
                 'icon' => $category->icon,
+                'image_url' => $category->full_image_url,
+                'is_active' => $category->is_active,
                 'courses_count' => $category->courses_count,
+                'created_at' => $category->created_at,
+                'updated_at' => $category->updated_at,
             ],
         ]);
     }
@@ -96,14 +102,16 @@ class CategoryController extends Controller
                     'course_name' => $course->course_name,
                     'course_code' => $course->course_code,
                     'description' => $course->description,
+                    'image_url' => $course->thumbnail_url,
                     'level' => $course->level,
                     'duration_hours' => $course->duration_hours,
                     'price' => $course->price,
                     'instructor_name' => $course->instructor_name,
                     'is_featured' => $course->is_featured,
-                    'thumbnail' => $course->thumbnail_url,
+                    'status' => $course->status,
                     'enrollments_count' => $course->enrollments_count,
                     'average_rating' => round($course->reviews_avg_rating ?? 0, 1),
+                    'created_at' => $course->created_at,
                 ];
             }),
             'pagination' => [

@@ -75,8 +75,10 @@ class LessonController extends Controller
                 'lesson_order' => $lesson->lesson_order,
                 'description' => $lesson->description,
                 'content' => $lesson->content,
-                'video_url' => $lesson->video_url,
+                'image_url' => $lesson->image_url ? asset('storage/' . $lesson->image_url) : null,
+                'video_url' => $lesson->video_url ? asset('storage/' . $lesson->video_url) : null,
                 'video_duration' => $lesson->video_duration,
+                'formatted_duration' => $lesson->formatted_duration,
                 'thumbnail' => $lesson->video_thumbnail_url,
                 'documents' => $lesson->getMedia('documents')->map(function ($media) {
                     return [

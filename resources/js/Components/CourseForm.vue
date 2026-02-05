@@ -15,7 +15,12 @@ const props = defineProps({
     }
 })
 
-const emit = defineEmits(['update:modelValue', 'imageChange'])
+const emit = defineEmits(['update:modelValue', 'imageChange', 'fieldUpdate'])
+
+// Helper to update form fields - emit event for parent to handle
+const updateField = (field, value) => {
+    emit('fieldUpdate', { field, value })
+}
 
 const imagePreview = ref(null)
 
@@ -45,7 +50,7 @@ const triggerImageInput = () => {
 const getCurrentImage = () => {
     if (imagePreview.value) return imagePreview.value
     if (props.modelValue.image_url) {
-        if (props.modelValue.image_url.startsWith('http')) {
+        if (props.modelValue.image_url.startsWith('http') || props.modelValue.image_url.startsWith('/storage/')) {
             return props.modelValue.image_url
         }
         return `/storage/${props.modelValue.image_url}`
@@ -71,7 +76,7 @@ const getCurrentImage = () => {
                 <div class="space-y-4">
                     <FormInput
                         :modelValue="modelValue.course_name"
-                        @update:modelValue="$emit('update:modelValue', { ...modelValue, course_name: $event })"
+                        @update:modelValue="updateField('course_name', $event)"
                         label="Course Name"
                         placeholder="Enter course name"
                         :error="modelValue.errors?.course_name"
@@ -81,7 +86,7 @@ const getCurrentImage = () => {
                     <div class="grid grid-cols-2 gap-4">
                         <FormInput
                             :modelValue="modelValue.course_code"
-                            @update:modelValue="$emit('update:modelValue', { ...modelValue, course_code: $event })"
+                            @update:modelValue="updateField('course_code', $event)"
                             label="Course Code"
                             placeholder="e.g., CS101"
                             :error="modelValue.errors?.course_code"
@@ -89,7 +94,7 @@ const getCurrentImage = () => {
                         />
                         <FormSelect
                             :modelValue="modelValue.category_id"
-                            @update:modelValue="$emit('update:modelValue', { ...modelValue, category_id: $event })"
+                            @update:modelValue="updateField('category_id', $event)"
                             label="Category"
                             :options="categories?.map(c => ({ value: c.id, label: c.category_name }))"
                             placeholder="Select category"
@@ -99,7 +104,7 @@ const getCurrentImage = () => {
 
                     <FormInput
                         :modelValue="modelValue.description"
-                        @update:modelValue="$emit('update:modelValue', { ...modelValue, description: $event })"
+                        @update:modelValue="updateField('description', $event)"
                         label="Description"
                         type="textarea"
                         placeholder="Describe what students will learn..."
@@ -109,7 +114,7 @@ const getCurrentImage = () => {
                     <FormSelect
                         v-if="isEdit && statusOptions"
                         :modelValue="modelValue.status"
-                        @update:modelValue="$emit('update:modelValue', { ...modelValue, status: $event })"
+                        @update:modelValue="updateField('status', $event)"
                         label="Status"
                         :options="statusOptions"
                         :error="modelValue.errors?.status"
@@ -128,7 +133,7 @@ const getCurrentImage = () => {
                     <div class="grid grid-cols-2 gap-4">
                         <FormSelect
                             :modelValue="modelValue.level"
-                            @update:modelValue="$emit('update:modelValue', { ...modelValue, level: $event })"
+                            @update:modelValue="updateField('level', $event)"
                             label="Level"
                             :options="levelOptions"
                             :error="modelValue.errors?.level"
@@ -136,7 +141,7 @@ const getCurrentImage = () => {
                         />
                         <FormInput
                             :modelValue="modelValue.instructor_name"
-                            @update:modelValue="$emit('update:modelValue', { ...modelValue, instructor_name: $event })"
+                            @update:modelValue="updateField('instructor_name', $event)"
                             label="Instructor Name"
                             placeholder="Instructor name"
                             :error="modelValue.errors?.instructor_name"
@@ -146,7 +151,7 @@ const getCurrentImage = () => {
                     <div class="grid grid-cols-3 gap-4">
                         <FormInput
                             :modelValue="modelValue.price"
-                            @update:modelValue="$emit('update:modelValue', { ...modelValue, price: $event })"
+                            @update:modelValue="updateField('price', $event)"
                             label="Price ($)"
                             type="number"
                             placeholder="0.00"
@@ -155,7 +160,7 @@ const getCurrentImage = () => {
                         />
                         <FormInput
                             :modelValue="modelValue.duration_hours"
-                            @update:modelValue="$emit('update:modelValue', { ...modelValue, duration_hours: $event })"
+                            @update:modelValue="updateField('duration_hours', $event)"
                             label="Duration (hours)"
                             type="number"
                             placeholder="Hours"
@@ -163,7 +168,7 @@ const getCurrentImage = () => {
                         />
                         <FormInput
                             :modelValue="modelValue.enrollment_limit"
-                            @update:modelValue="$emit('update:modelValue', { ...modelValue, enrollment_limit: $event })"
+                            @update:modelValue="updateField('enrollment_limit', $event)"
                             label="Enrollment Limit"
                             type="number"
                             placeholder="Unlimited"
@@ -173,7 +178,7 @@ const getCurrentImage = () => {
 
                     <FormSelect
                         :modelValue="modelValue.is_featured"
-                        @update:modelValue="$emit('update:modelValue', { ...modelValue, is_featured: $event })"
+                        @update:modelValue="updateField('is_featured', $event)"
                         label="Featured Course"
                         :options="featuredOptions"
                         :error="modelValue.errors?.is_featured"

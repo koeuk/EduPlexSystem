@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\LessonProgressController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\QuizController;
+use App\Http\Controllers\Api\VideoController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -42,6 +43,8 @@ Route::prefix('data')->group(function () {
     Route::get('/categories/{category}/courses', [DataController::class, 'coursesByCategory']);
     Route::get('/user-statuses', [DataController::class, 'userStatuses']);
     Route::get('/student-statuses', [DataController::class, 'studentStatuses']);
+    Route::get('/lesson-types', [DataController::class, 'lessonTypes']);
+    Route::get('/video-config', [VideoController::class, 'config']);
 });
 
 // Protected routes (require Sanctum token)
@@ -53,6 +56,18 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::put('/profile', [AuthController::class, 'updateProfile']);
         Route::put('/change-password', [AuthController::class, 'changePassword']);
         Route::post('/logout', [AuthController::class, 'logout']);
+    });
+
+    // Videos
+    Route::prefix('videos')->group(function () {
+        Route::get('/config', [VideoController::class, 'config']);
+        Route::get('/list', [VideoController::class, 'list']);
+        Route::post('/upload', [VideoController::class, 'upload']);
+        Route::post('/metadata', [VideoController::class, 'metadata']);
+        Route::delete('/delete', [VideoController::class, 'destroy']);
+        Route::post('/lessons/{lesson}/upload', [VideoController::class, 'uploadForLesson']);
+        Route::delete('/lessons/{lesson}', [VideoController::class, 'destroyFromLesson']);
+        Route::get('/lessons/{lesson}/stream', [VideoController::class, 'stream']);
     });
 
     // Categories

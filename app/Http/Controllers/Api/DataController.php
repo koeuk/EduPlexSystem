@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\LessonType;
 use App\Enums\StudentStatus;
 use App\Enums\UserStatus;
 use App\Http\Controllers\Controller;
@@ -24,6 +25,7 @@ class DataController extends Controller
                 'courses' => $this->getCoursesData(),
                 'userStatuses' => UserStatus::options(),
                 'studentStatuses' => StudentStatus::options(),
+                'lessonTypes' => LessonType::options(),
             ],
         ]);
     }
@@ -82,6 +84,17 @@ class DataController extends Controller
         return response()->json([
             'success' => true,
             'data' => StudentStatus::options(),
+        ]);
+    }
+
+    /**
+     * Get lesson type options
+     */
+    public function lessonTypes(): JsonResponse
+    {
+        return response()->json([
+            'success' => true,
+            'data' => LessonType::options(),
         ]);
     }
 

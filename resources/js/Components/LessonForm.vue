@@ -11,13 +11,7 @@ const props = defineProps({
     },
     lessonTypeOptions: {
         type: Array,
-        default: () => [
-            { value: 'video', label: 'Video' },
-            { value: 'text', label: 'Text' },
-            { value: 'quiz', label: 'Quiz' },
-            { value: 'assignment', label: 'Assignment' },
-            { value: 'document', label: 'Document' },
-        ]
+        required: true
     },
     quizzes: {
         type: Array,
@@ -25,7 +19,12 @@ const props = defineProps({
     }
 })
 
-const emit = defineEmits(['update:modelValue'])
+const emit = defineEmits(['update:modelValue', 'fieldUpdate'])
+
+// Helper to update form fields - emit event for parent to handle
+const updateField = (field, value) => {
+    emit('fieldUpdate', { field, value })
+}
 
 const mandatoryOptions = [
     { value: true, label: 'Yes' },
@@ -45,7 +44,7 @@ const mandatoryOptions = [
             <div class="space-y-4">
                 <FormInput
                     :modelValue="modelValue.lesson_title"
-                    @update:modelValue="$emit('update:modelValue', { ...modelValue, lesson_title: $event })"
+                    @update:modelValue="updateField('lesson_title', $event)"
                     label="Lesson Title"
                     placeholder="Enter lesson title"
                     :error="modelValue.errors?.lesson_title"
@@ -55,7 +54,7 @@ const mandatoryOptions = [
                 <div class="grid grid-cols-2 gap-4">
                     <FormSelect
                         :modelValue="modelValue.module_id"
-                        @update:modelValue="$emit('update:modelValue', { ...modelValue, module_id: $event })"
+                        @update:modelValue="updateField('module_id', $event)"
                         label="Module"
                         :options="modules?.map(m => ({ value: m.id, label: m.module_title }))"
                         placeholder="Select module (optional)"
@@ -64,7 +63,7 @@ const mandatoryOptions = [
 
                     <FormSelect
                         :modelValue="modelValue.lesson_type"
-                        @update:modelValue="$emit('update:modelValue', { ...modelValue, lesson_type: $event })"
+                        @update:modelValue="updateField('lesson_type', $event)"
                         label="Lesson Type"
                         :options="lessonTypeOptions"
                         :error="modelValue.errors?.lesson_type"
@@ -74,7 +73,7 @@ const mandatoryOptions = [
 
                 <FormInput
                     :modelValue="modelValue.description"
-                    @update:modelValue="$emit('update:modelValue', { ...modelValue, description: $event })"
+                    @update:modelValue="updateField('description', $event)"
                     label="Description"
                     type="textarea"
                     placeholder="Describe what this lesson covers..."
@@ -95,7 +94,7 @@ const mandatoryOptions = [
                 <div class="grid grid-cols-2 gap-4">
                     <FormInput
                         :modelValue="modelValue.duration_minutes"
-                        @update:modelValue="$emit('update:modelValue', { ...modelValue, duration_minutes: $event })"
+                        @update:modelValue="updateField('duration_minutes', $event)"
                         label="Duration (minutes)"
                         type="number"
                         placeholder="e.g., 30"
@@ -104,7 +103,7 @@ const mandatoryOptions = [
 
                     <FormSelect
                         :modelValue="modelValue.is_mandatory"
-                        @update:modelValue="$emit('update:modelValue', { ...modelValue, is_mandatory: $event })"
+                        @update:modelValue="updateField('is_mandatory', $event)"
                         label="Required"
                         :options="mandatoryOptions"
                         :error="modelValue.errors?.is_mandatory"
@@ -115,7 +114,7 @@ const mandatoryOptions = [
                 <FormInput
                     v-if="modelValue.lesson_type === 'text'"
                     :modelValue="modelValue.content"
-                    @update:modelValue="$emit('update:modelValue', { ...modelValue, content: $event })"
+                    @update:modelValue="updateField('content', $event)"
                     label="Content"
                     type="textarea"
                     placeholder="Enter lesson content..."
@@ -127,7 +126,7 @@ const mandatoryOptions = [
                 <FormInput
                     v-if="modelValue.lesson_type === 'video'"
                     :modelValue="modelValue.video_duration"
-                    @update:modelValue="$emit('update:modelValue', { ...modelValue, video_duration: $event })"
+                    @update:modelValue="updateField('video_duration', $event)"
                     label="Video Duration (seconds)"
                     type="number"
                     placeholder="e.g., 600"
@@ -138,7 +137,7 @@ const mandatoryOptions = [
                 <FormSelect
                     v-if="modelValue.lesson_type === 'quiz' && quizzes?.length"
                     :modelValue="modelValue.quiz_id"
-                    @update:modelValue="$emit('update:modelValue', { ...modelValue, quiz_id: $event })"
+                    @update:modelValue="updateField('quiz_id', $event)"
                     label="Quiz"
                     :options="quizzes?.map(q => ({ value: q.id, label: q.quiz_title }))"
                     placeholder="Select a quiz"
@@ -147,7 +146,7 @@ const mandatoryOptions = [
 
                 <FormInput
                     :modelValue="modelValue.image_url"
-                    @update:modelValue="$emit('update:modelValue', { ...modelValue, image_url: $event })"
+                    @update:modelValue="updateField('image_url', $event)"
                     label="Image URL (optional)"
                     placeholder="https://example.com/image.jpg"
                     :error="modelValue.errors?.image_url"

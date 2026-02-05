@@ -21,6 +21,9 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\HandleInertiaRequests::class,
         ]);
 
+        // Redirect authenticated users away from guest routes (login, etc.)
+        $middleware->redirectUsersTo('/admin/dashboard');
+
         $middleware->alias([
             'admin' => \App\Http\Middleware\CheckAdmin::class,
             'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,

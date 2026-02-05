@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\LessonType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -23,6 +24,7 @@ class Lesson extends Model implements HasMedia
         'lesson_order',
         'description',
         'image_url',
+        'video_url',
         'content',
         'video_duration',
         'quiz_id',
@@ -30,9 +32,16 @@ class Lesson extends Model implements HasMedia
         'duration_minutes',
     ];
 
+    protected $appends = [
+        'image_full_url',
+        'video_full_url',
+        'formatted_duration',
+    ];
+
     protected function casts(): array
     {
         return [
+            'lesson_type' => LessonType::class,
             'lesson_order' => 'integer',
             'video_duration' => 'integer',
             'is_mandatory' => 'boolean',
@@ -71,7 +80,7 @@ class Lesson extends Model implements HasMedia
             ->performOnCollections('thumbnail');
     }
 
-    public function getVideoUrlAttribute(): ?string
+    public function getMediaVideoUrlAttribute(): ?string
     {
         return $this->getFirstMediaUrl('video') ?: null;
     }
@@ -79,6 +88,30 @@ class Lesson extends Model implements HasMedia
     public function getVideoThumbnailUrlAttribute(): ?string
     {
         return $this->getFirstMediaUrl('thumbnail', 'thumb') ?: null;
+    }
+
+    public function getVideoFullUrlAttribute(): ?string
+    {
+        if ($this->attributes['video_url'] ?? null) {
+            $videoUrl = $this->attributes['video_url'];
+            if (str_starts_with($videoUrl, 'http')) {
+                return $videoUrl;
+            }
+            return '/storage/' . $videoUrl;
+        }
+        return null;
+    }
+
+    public function getImageFullUrlAttribute(): ?string
+    {
+        if ($this->attributes['image_url'] ?? null) {
+            $imageUrl = $this->attributes['image_url'];
+            if (str_starts_with($imageUrl, 'http')) {
+                return $imageUrl;
+            }
+            return '/storage/' . $imageUrl;
+        }
+        return null;
     }
 
     public function course(): BelongsTo
