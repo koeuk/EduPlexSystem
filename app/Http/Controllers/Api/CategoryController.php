@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Filters\PriceRangeFilter;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Course;
@@ -83,8 +84,8 @@ class CategoryController extends Controller
         $courses = QueryBuilder::for(Course::class)
             ->allowedFilters([
                 AllowedFilter::exact('level'),
-                AllowedFilter::scope('price_min'),
-                AllowedFilter::scope('price_max'),
+                AllowedFilter::exact('pricing_type'),
+                AllowedFilter::custom('price_range', new PriceRangeFilter()),
                 AllowedFilter::exact('is_featured'),
             ])
             ->allowedSorts(['course_name', 'price', 'created_at'])
@@ -105,6 +106,8 @@ class CategoryController extends Controller
                     'image_url' => $course->thumbnail_url,
                     'level' => $course->level,
                     'duration_hours' => $course->duration_hours,
+                    'pricing_type' => $course->pricing_type,
+                    'is_free' => $course->pricing_type === 'free',
                     'price' => $course->price,
                     'instructor_name' => $course->instructor_name,
                     'is_featured' => $course->is_featured,

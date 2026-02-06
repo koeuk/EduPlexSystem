@@ -9,7 +9,6 @@ use App\Models\Course;
 use App\Models\CourseReview;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\QueryBuilder;
 
@@ -193,7 +192,7 @@ class CourseController extends Controller
                 'course' => [
                     'id' => $course->id,
                     'course_name' => $course->course_name,
-                    'thumbnail' => $course->thumbnail_url,
+                    'image_url' => $course->thumbnail_url,
                 ],
                 'enrollment' => [
                     'id' => $enrollment->id,
@@ -220,7 +219,7 @@ class CourseController extends Controller
                                 'is_mandatory' => $lesson->is_mandatory,
                                 'image_url' => $lesson->image_url ? asset('storage/' . $lesson->image_url) : null,
                                 'video_url' => $lesson->video_url ? asset('storage/' . $lesson->video_url) : null,
-                                'thumbnail' => $lesson->video_thumbnail_url,
+                                'video_thumbnail_url' => $lesson->video_thumbnail_url,
                                 'progress' => $progress ? [
                                     'status' => $progress->status,
                                     'progress_percentage' => $progress->progress_percentage,
@@ -354,70 +353,5 @@ class CourseController extends Controller
                 'errors' => [$e->getMessage()],
             ], 500);
         }
-    }
-
-    public function updateReview(Request $request, CourseReview $review): JsonResponse
-    {
-        $user = $request->user();
-        $student = $user->student;
-
-        if (!$student || $review->student_id !== $student->id) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Unauthorized',
-            ], 403);
-        }
-
-        $validated = $request->validate([
-            'rating' => 'sometimes|integer|min:1|max:5',
-            'review_text' => 'nullable|string|max:1000',
-            'would_recommend' => 'sometimes|boolean',
-        ]);
-
-        $review->update($validated);
-
-        activity()
-            ->causedBy($user)
-            ->performedOn($review)
-            ->withProperties(['updated_fields' => array_keys($validated)])
-            ->log('Review updated');
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Review updated successfully',
-            'data' => [
-                'id' => $review->id,
-                'rating' => $review->rating,
-                'review_text' => $review->review_text,
-                'would_recommend' => $review->would_recommend,
-                'updated_at' => $review->updated_at,
-            ],
-        ]);
-    }
-
-    public function deleteReview(Request $request, CourseReview $review): JsonResponse
-    {
-        $user = $request->user();
-        $student = $user->student;
-
-        if (!$student || $review->student_id !== $student->id) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Unauthorized',
-            ], 403);
-        }
-
-        activity()
-            ->causedBy($user)
-            ->performedOn($review)
-            ->withProperties(['course_id' => $review->course_id])
-            ->log('Review deleted');
-
-        $review->delete();
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Review deleted successfully',
-        ]);
     }
 }

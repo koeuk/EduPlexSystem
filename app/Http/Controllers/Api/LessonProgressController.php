@@ -48,7 +48,7 @@ class LessonProgressController extends Controller
                         'lesson_title' => $item->lesson->lesson_title,
                         'lesson_type' => $item->lesson->lesson_type,
                         'duration_minutes' => $item->lesson->duration_minutes,
-                        'thumbnail' => $item->lesson->video_thumbnail_url,
+                        'image_url' => $item->lesson->video_thumbnail_url,
                         'module' => $item->lesson->module ? [
                             'id' => $item->lesson->module->id,
                             'module_title' => $item->lesson->module->module_title,
@@ -57,7 +57,7 @@ class LessonProgressController extends Controller
                     'course' => $item->course ? [
                         'id' => $item->course->id,
                         'course_name' => $item->course->course_name,
-                        'thumbnail' => $item->course->thumbnail_url,
+                        'image_url' => $item->course->thumbnail_url,
                     ] : null,
                 ];
             }),
@@ -112,7 +112,7 @@ class LessonProgressController extends Controller
                     'course' => $item->course ? [
                         'id' => $item->course->id,
                         'course_name' => $item->course->course_name,
-                        'thumbnail' => $item->course->thumbnail_url,
+                        'image_url' => $item->course->thumbnail_url,
                     ] : null,
                 ];
             }),

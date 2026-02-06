@@ -51,7 +51,7 @@ class CourseReviewController extends Controller
                     'course' => $review->course ? [
                         'id' => $review->course->id,
                         'course_name' => $review->course->course_name,
-                        'thumbnail' => $review->course->thumbnail_url,
+                        'image_url' => $review->course->thumbnail_url,
                     ] : null,
                     'created_at' => $review->created_at,
                     'updated_at' => $review->updated_at,
@@ -123,12 +123,12 @@ class CourseReviewController extends Controller
                 'course' => $review->course ? [
                     'id' => $review->course->id,
                     'course_name' => $review->course->course_name,
-                    'thumbnail' => $review->course->thumbnail_url,
+                    'image_url' => $review->course->thumbnail_url,
                 ] : null,
                 'student' => [
                     'id' => $review->student->id,
                     'full_name' => $review->student->user->full_name,
-                    'profile_picture' => $review->student->user->profile_picture_url,
+                    'image_url' => $review->student->user->profile_picture_url,
                 ],
                 'created_at' => $review->created_at,
                 'updated_at' => $review->updated_at,

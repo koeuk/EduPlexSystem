@@ -94,12 +94,12 @@ class DashboardController extends Controller
                         'id' => $progress->lesson->id,
                         'lesson_title' => $progress->lesson->lesson_title,
                         'lesson_type' => $progress->lesson->lesson_type,
-                        'thumbnail' => $progress->lesson->video_thumbnail_url,
+                        'image_url' => $progress->lesson->video_thumbnail_url,
                     ],
                     'course' => [
                         'id' => $progress->lesson->course->id,
                         'course_name' => $progress->lesson->course->course_name,
-                        'thumbnail' => $progress->lesson->course->thumbnail_url,
+                        'image_url' => $progress->lesson->course->thumbnail_url,
                     ],
                     'module' => $progress->lesson->module ? [
                         'id' => $progress->lesson->module->id,
@@ -140,7 +140,7 @@ class DashboardController extends Controller
         ]);
     }
 
-    public function continueeLearning(Request $request): JsonResponse
+    public function continueLearning(Request $request): JsonResponse
     {
         $user = $request->user();
         $student = $user->student;
@@ -184,7 +184,7 @@ class DashboardController extends Controller
                 'course' => [
                     'id' => $enrollment->course->id,
                     'course_name' => $enrollment->course->course_name,
-                    'thumbnail' => $enrollment->course->thumbnail_url,
+                    'image_url' => $enrollment->course->thumbnail_url,
                 ],
                 'next_lesson' => $nextLesson ? [
                     'id' => $nextLesson->id,
