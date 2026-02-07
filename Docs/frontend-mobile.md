@@ -1,415 +1,36 @@
-# EduPlex LMS Mobile API Specification
+# EduPlex Mobile API Reference
 
-Create a complete Laravel REST API for a Learning Management System (LMS) Mobile App using Laravel 11, Laravel Sanctum for authentication, and Spatie packages (spatie/laravel-query-builder, spatie/laravel-medialibrary, spatie/laravel-activitylog).
-
-## SPATIE PACKAGES TO USE:
-1. spatie/laravel-query-builder: for advanced filtering, sorting, and searching in API endpoints
-2. spatie/laravel-medialibrary: for handling file uploads and serving media
-3. spatie/laravel-activitylog: for tracking student activities
-
-## DATABASE SCHEMA (same as Admin Dashboard - 18 tables + Spatie tables)
-
-## SPATIE SETUP:
-1. Install packages:
-   - composer require spatie/laravel-query-builder
-   - composer require spatie/laravel-medialibrary
-   - composer require spatie/laravel-activitylog
-
-2. Publish configurations and run migrations
+API documentation for mobile app developers.
 
 ---
 
-## API ENDPOINTS (Base URL: /api)
+## Base URL
+
+```
+https://your-domain.com/api
+```
 
 ---
 
-### AUTHENTICATION (public routes):
+## Authentication
 
-**POST /auth/register:**
-- Register new student (username, email, password, full_name, phone, date_of_birth, gender)
-- Handle profile_picture upload with Spatie Media Library
-- Create user and student records
-- Log activity: "Student registered"
-- Return token
+### Token-Based Authentication
 
-**POST /auth/login:**
-- Login student (email, password)
-- Verify user_type is student
-- Log activity: "Student logged in"
-- Return token
+All protected endpoints require a Bearer token in the Authorization header:
 
-**POST /auth/forgot-password:**
-- Send password reset email
-- Log activity: "Password reset requested"
+```
+Authorization: Bearer {your_token}
+```
 
-**POST /auth/reset-password:**
-- Reset password with token
-- Log activity: "Password reset"
+### Get Token
 
-### AUTHENTICATION (protected routes - require Sanctum token):
-
-**GET /auth/profile:**
-- Get authenticated student profile with student relationship
-- Include image_url from Spatie Media Library
-
-**PUT /auth/profile:**
-- Update profile (full_name, phone, date_of_birth, gender, address)
-- Handle profile_picture upload/update with Spatie Media Library
-- Log activity: "Profile updated"
-
-**PUT /auth/change-password:**
-- Change password (current_password, new_password, new_password_confirmation)
-- Log activity: "Password changed"
-
-**POST /auth/logout:**
-- Delete current access token
-- Log activity: "Student logged out"
+Obtain a token by logging in or registering.
 
 ---
 
-### DATA ENDPOINTS (public - for dropdowns/filters):
+## Response Format
 
-**GET /data:**
-- Get all dropdown options in one request
-- Returns: categories, courses, userStatuses, studentStatuses, lessonTypes, coursePricingTypes
-
-**GET /data/categories:**
-- Categories for dropdown
-- Returns: [{value: id, label: category_name}]
-
-**GET /data/courses:**
-- Courses for dropdown
-- Optional: ?category_id=1 to filter by category
-- Returns: [{value: id, label: course_name, category_id}]
-
-**GET /data/categories/{category}/courses:**
-- Courses by specific category
-
-**GET /data/user-statuses:**
-- User status options (active, inactive, suspended)
-
-**GET /data/student-statuses:**
-- Student status options (active, inactive, graduated, suspended)
-
-**GET /data/lesson-types:**
-- Lesson type options (video, text, quiz)
-
-**GET /data/course-pricing-types:**
-- Pricing type options (free, paid)
-
-**GET /data/course-levels:**
-- Level options (beginner, intermediate, advanced)
-
-**GET /data/course-filters:**
-- All course filter options combined
-- Returns: {categories, levels, pricing_types}
-
-**GET /data/video-config:**
-- Video upload configuration (max size, allowed types)
-
----
-
-### CATEGORIES (protected):
-
-**GET /categories:**
-- List all active categories with course count
-- Use Spatie QueryBuilder (allowedFilters: category_name, is_active)
-- Use Spatie QueryBuilder (allowedSorts: category_name, created_at)
-
-**GET /categories/{id}:**
-- Get category details with course count
-- Include image_url
-
-**GET /categories/{id}/courses:**
-- Get published courses by category
-- Use Spatie QueryBuilder (allowedFilters: level, pricing_type, price_range, is_featured)
-- Use Spatie QueryBuilder (allowedSorts: course_name, price, created_at)
-- Include image_url from Spatie Media Library
-- Paginated (20 per page)
-
----
-
-### COURSES (protected):
-
-**GET /courses:**
-- List published courses
-- Use Spatie QueryBuilder with filters:
-  - `filter[category_id]` - exact match
-  - `filter[level]` - exact match (beginner, intermediate, advanced)
-  - `filter[is_featured]` - exact match (1 or 0)
-  - `filter[pricing_type]` - exact match (free, paid)
-  - `filter[price_range]` - custom filter (format: min,max e.g., "50,100")
-  - `filter[search]` - partial match on course_name, course_code, description, instructor_name
-- Use Spatie QueryBuilder (allowedSorts: course_name, price, created_at)
-- Include: category, enrollment count, average rating, image_url
-- Response fields: id, course_name, course_code, description, image_url, level, duration_hours, pricing_type, is_free, price, instructor_name, is_featured, status, category, enrollments_count, average_rating, created_at
-- Pagination (20 per page)
-
-**GET /courses/{id}:**
-- Get course details with category, modules, lessons
-- Include image_url from Spatie Media Library
-- Check if current student is enrolled
-- Include: pricing_type, is_free, price
-- Include course reviews summary
-
-**GET /courses/{id}/modules:**
-- Get course modules with lessons (only if enrolled)
-- Include lesson progress for current student
-- Include lesson image_url, video_url from Spatie Media Library
-- Use Spatie QueryBuilder for sorting
-
-**GET /courses/{id}/reviews:**
-- Get course reviews with student info
-- Use Spatie QueryBuilder (allowedFilters: rating)
-- Use Spatie QueryBuilder (allowedSorts: created_at, rating)
-- Paginated (20)
-
-**POST /courses/{id}/reviews:**
-- Add course review (rating, review_text, would_recommend)
-- Verify enrollment
-- Log activity: "Course reviewed"
-
----
-
-### COURSE REVIEWS (protected):
-
-**GET /reviews:**
-- List user's own reviews
-- Include course info
-
-**GET /reviews/{id}:**
-- Get review detail
-
-**GET /reviews/courses/{course}:**
-- Get reviews by specific course
-
-**POST /reviews/courses/{course}:**
-- Create review for course
-- Body: {rating, review_text, would_recommend}
-- Verify enrollment
-- Log activity: "Course reviewed"
-
-**PUT /reviews/{id}:**
-- Update own review
-- Log activity: "Review updated"
-
-**DELETE /reviews/{id}:**
-- Delete own review
-- Log activity: "Review deleted"
-
----
-
-### ENROLLMENTS (protected):
-
-**GET /enrollments:**
-- Get current student's enrolled courses
-- Use Spatie QueryBuilder (allowedFilters: status, payment_status)
-- Use Spatie QueryBuilder (allowedSorts: enrollment_date, progress_percentage)
-- Include course with image_url, pricing_type, is_free
-- Paginated (20)
-
-**POST /enrollments:**
-- Enroll in a course (course_id)
-- Verify course is published, check enrollment limit, check if already enrolled
-- Log activity: "Enrolled in course"
-
-**GET /enrollments/{id}:**
-- Get enrollment details with course, modules, lessons, progress
-- Include media URLs for course and lessons (image_url, video_url)
-
-**DELETE /enrollments/{id}:**
-- Drop/cancel enrollment (set status to 'dropped')
-- Log activity: "Enrollment dropped"
-
----
-
-### LESSONS (protected):
-
-**GET /lessons/{id}:**
-- Get lesson details (content, quiz)
-- Include image_url, video_url, video_duration from Spatie Media Library
-- Verify student is enrolled in course
-
-**POST /lessons/{id}/progress:**
-- Update lesson progress (status, progress_percentage, time_spent_minutes, video_last_position, scroll_position)
-- Update enrollment progress automatically
-- Log activity: "Lesson progress updated"
-
-**GET /lessons/{id}/progress:**
-- Get lesson progress for current student
-
----
-
-### LESSON PROGRESS (protected):
-
-**GET /progress:**
-- List all lesson progress for current student
-
-**GET /progress/completed:**
-- List completed lessons
-
-**GET /progress/courses/{courseId}:**
-- Get progress for specific course
-
-**GET /progress/lessons/{lesson}:**
-- Get specific lesson progress
-
-**PUT /progress/lessons/{lesson}:**
-- Update lesson progress
-- Body: {status, progress_percentage, completed_at}
-
----
-
-### VIDEOS (protected):
-
-**GET /videos/config:**
-- Get video upload configuration
-- Returns: max_size, allowed_types, storage_path
-
-**GET /videos/list:**
-- List uploaded videos
-
-**POST /videos/upload:**
-- Upload video file (multipart/form-data)
-- Body: video file
-
-**POST /videos/metadata:**
-- Get video metadata
-- Body: {path: "videos/example.mp4"}
-
-**DELETE /videos/delete:**
-- Delete video file
-- Body: {path: "videos/example.mp4"}
-
-**POST /videos/lessons/{lesson}/upload:**
-- Upload video for specific lesson
-- Body: video file (multipart/form-data)
-
-**DELETE /videos/lessons/{lesson}:**
-- Delete video from lesson
-
-**GET /videos/lessons/{lesson}/stream:**
-- Stream lesson video
-
----
-
-### QUIZZES (protected):
-
-**GET /quizzes/{id}:**
-- Get quiz details with questions and options
-- Include question image URLs from Spatie Media Library
-- Verify enrollment
-- Check if max attempts reached
-
-**POST /quizzes/{id}/attempts:**
-- Start quiz attempt
-- Create attempt record
-- Return questions with image URLs
-- Log activity: "Quiz attempt started"
-
-**PUT /quizzes/attempts/{id}:**
-- Submit quiz answers (array of {question_id, selected_option_id, answer_text})
-- Calculate score, mark as passed/failed
-- Log activity: "Quiz submitted"
-- Return results with correct answers (if show_correct_answers is true)
-
-**GET /quizzes/attempts/{id}:**
-- Get quiz attempt results with answers and correct options
-
-**GET /quizzes/{id}/attempts:**
-- Get student's quiz attempts history for a quiz
-- Use Spatie QueryBuilder (allowedSorts: started_at, score_percentage)
-
----
-
-### PAYMENTS (protected):
-
-**GET /payments:**
-- Get student's payment history
-- Use Spatie QueryBuilder (allowedFilters: status, payment_method)
-- Use Spatie QueryBuilder (allowedSorts: payment_date, amount)
-- Include course info with image_url
-- Paginated (20)
-
-**POST /payments:**
-- Process payment for course (course_id, payment_method, amount)
-- Verify amount matches course price
-- Create payment record
-- Update enrollment payment_status
-- Log activity: "Payment processed"
-
-**GET /payments/{id}:**
-- Get payment details with course info
-
----
-
-### CERTIFICATES (protected):
-
-**GET /certificates:**
-- Get student's certificates
-- Include certificate PDF URL from Spatie Media Library
-- Include course info with image_url
-
-**GET /certificates/{id}:**
-- Get certificate details
-- Include PDF URL
-
-**GET /certificates/{id}/download:**
-- Download certificate PDF from Spatie Media Library
-- Stream file response
-
-### CERTIFICATE VERIFICATION (public):
-
-**GET /certificates/verify/{code}:**
-- Verify certificate by code
-- Return student name, course name, issue date
-- Include certificate PDF URL
-
----
-
-### NOTIFICATIONS (protected):
-
-**GET /notifications:**
-- Get student notifications
-- Use Spatie QueryBuilder (allowedFilters: type, is_read)
-- Use Spatie QueryBuilder (allowedSorts: created_at)
-- Paginated (20)
-
-**PUT /notifications/{id}/read:**
-- Mark notification as read
-
-**PUT /notifications/read-all:**
-- Mark all notifications as read
-
-**DELETE /notifications/{id}:**
-- Delete notification
-
----
-
-### DASHBOARD (protected):
-
-**GET /dashboard/stats:**
-- Get student statistics (enrolled_courses, completed_courses, in_progress_courses, certificates, total_learning_time_minutes)
-
-**GET /dashboard/recent-activity:**
-- Get recent lesson progress (last 10)
-- Include lesson, course info with image_urls
-- Use Spatie QueryBuilder for sorting
-
-**GET /dashboard/activity-log:**
-- Get student's activity log (last 50 activities)
-- Use Spatie Activity Log
-- Use Spatie QueryBuilder (allowedFilters: description, created_at)
-
-**GET /dashboard/continue-learning:**
-- Get courses to continue learning
-- Include last accessed lesson, progress
-
----
-
-## RESPONSE FORMAT:
-
-### Success Response:
+### Success Response
 ```json
 {
   "success": true,
@@ -418,16 +39,18 @@ Create a complete Laravel REST API for a Learning Management System (LMS) Mobile
 }
 ```
 
-### Error Response:
+### Error Response
 ```json
 {
   "success": false,
-  "message": "Error message",
-  "errors": { ... }
+  "message": "Error description",
+  "errors": {
+    "field": ["Error message"]
+  }
 }
 ```
 
-### Paginated Response:
+### Paginated Response
 ```json
 {
   "success": true,
@@ -441,74 +64,432 @@ Create a complete Laravel REST API for a Learning Management System (LMS) Mobile
 }
 ```
 
+### HTTP Status Codes
+
+| Code | Description |
+|------|-------------|
+| 200 | Success |
+| 201 | Created |
+| 400 | Bad Request |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+| 422 | Validation Error |
+| 500 | Server Error |
+
 ---
 
-## COURSE RESPONSE FIELDS:
+## Endpoints
 
+---
+
+## 1. Authentication
+
+### Register
+
+```
+POST /auth/register
+```
+
+**Body (multipart/form-data):**
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| username | string | Yes | Unique username |
+| email | string | Yes | Valid email |
+| password | string | Yes | Min 8 characters |
+| password_confirmation | string | Yes | Must match password |
+| full_name | string | Yes | Full name |
+| phone | string | No | Phone number |
+| date_of_birth | date | No | Format: YYYY-MM-DD |
+| gender | string | No | male, female, other |
+| profile_picture | file | No | JPEG, PNG, WebP (max 2MB) |
+
+**Response:**
 ```json
 {
-  "id": 1,
-  "course_name": "Complete Laravel Course",
-  "course_code": "WEB-LAR-001",
-  "description": "...",
-  "image_url": "/storage/courses/image.jpg",
-  "level": "beginner",
-  "duration_hours": 40,
-  "pricing_type": "paid",
-  "is_free": false,
-  "price": "99.99",
-  "instructor_name": "John Smith",
-  "enrollment_limit": 100,
-  "is_featured": true,
-  "status": "published",
-  "category": {
-    "id": 1,
-    "category_name": "Web Development",
-    "description": "...",
-    "image_url": "/storage/categories/image.jpg"
-  },
-  "enrollments_count": 150,
-  "reviews_count": 45,
-  "average_rating": 4.5,
-  "is_enrolled": true,
-  "enrollment": {
-    "id": 1,
-    "status": "active",
-    "progress_percentage": 65,
-    "enrollment_date": "2026-01-15",
-    "last_accessed": "2026-02-04"
-  },
-  "created_at": "2026-01-01T00:00:00Z"
+  "success": true,
+  "message": "Registration successful",
+  "data": {
+    "user": {
+      "id": 1,
+      "username": "john_doe",
+      "email": "john@example.com",
+      "full_name": "John Doe",
+      "profile_picture": "https://..."
+    },
+    "student": {
+      "id": 1,
+      "student_id_number": "STU-2026-000001"
+    },
+    "token": "1|abc123..."
+  }
 }
 ```
 
 ---
 
-## ENROLLMENT RESPONSE FIELDS:
+### Login
 
+```
+POST /auth/login
+```
+
+**Body:**
 ```json
 {
-  "id": 1,
-  "enrollment_date": "2026-01-15",
-  "completion_date": null,
-  "progress_percentage": 65,
-  "status": "active",
-  "payment_status": "paid",
-  "certificate_issued": false,
-  "last_accessed": "2026-02-04",
-  "course": {
+  "email": "john@example.com",
+  "password": "password123"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Login successful",
+  "data": {
+    "user": {
+      "id": 1,
+      "username": "john_doe",
+      "email": "john@example.com",
+      "full_name": "John Doe",
+      "phone": "1234567890",
+      "image_url": "https://...",
+      "user_type": "student",
+      "status": "active"
+    },
+    "student": {
+      "id": 1,
+      "student_id_number": "STU-2026-000001",
+      "student_status": "active",
+      "enrollment_date": "2026-01-15"
+    },
+    "token": "1|abc123..."
+  }
+}
+```
+
+---
+
+### Forgot Password
+
+```
+POST /auth/forgot-password
+```
+
+**Body:**
+```json
+{
+  "email": "john@example.com"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Password reset link sent to your email"
+}
+```
+
+---
+
+### Reset Password
+
+```
+POST /auth/reset-password
+```
+
+**Body:**
+```json
+{
+  "token": "reset_token_from_email",
+  "email": "john@example.com",
+  "password": "newpassword123",
+  "password_confirmation": "newpassword123"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Password has been reset successfully"
+}
+```
+
+---
+
+### Get Profile
+
+```
+GET /auth/profile
+```
+*Requires authentication*
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
     "id": 1,
-    "course_name": "Complete Laravel Course",
-    "course_code": "WEB-LAR-001",
-    "description": "...",
-    "image_url": "/storage/courses/image.jpg",
-    "level": "beginner",
-    "duration_hours": 40,
-    "pricing_type": "paid",
-    "is_free": false,
-    "price": "99.99",
-    "instructor_name": "John Smith",
-    "category": { ... },
+    "username": "john_doe",
+    "email": "john@example.com",
+    "full_name": "John Doe",
+    "phone": "1234567890",
+    "date_of_birth": "1995-05-15",
+    "gender": "male",
+    "address": "123 Main St",
+    "image_url": "https://...",
+    "user_type": "student",
+    "status": "active",
+    "student": {
+      "id": 1,
+      "student_id_number": "STU-2026-000001",
+      "enrollment_date": "2026-01-15",
+      "student_status": "active"
+    }
+  }
+}
+```
+
+---
+
+### Update Profile
+
+```
+PUT /auth/profile
+```
+*Requires authentication*
+
+**Body (multipart/form-data):**
+| Field | Type | Required |
+|-------|------|----------|
+| full_name | string | No |
+| phone | string | No |
+| date_of_birth | date | No |
+| gender | string | No |
+| address | string | No |
+| profile_picture | file | No |
+
+---
+
+### Change Password
+
+```
+PUT /auth/change-password
+```
+*Requires authentication*
+
+**Body:**
+```json
+{
+  "current_password": "oldpassword",
+  "new_password": "newpassword123",
+  "new_password_confirmation": "newpassword123"
+}
+```
+
+---
+
+### Logout
+
+```
+POST /auth/logout
+```
+*Requires authentication*
+
+---
+
+## 2. Data (Public - For Dropdowns)
+
+### Get All Filter Options
+
+```
+GET /data
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "categories": [...],
+    "courses": [...],
+    "userStatuses": [...],
+    "studentStatuses": [...],
+    "lessonTypes": [...],
+    "coursePricingTypes": [...]
+  }
+}
+```
+
+### Other Data Endpoints
+
+| Endpoint | Description |
+|----------|-------------|
+| `GET /data/categories` | Category list for dropdown |
+| `GET /data/courses` | Course list (optional: `?category_id=1`) |
+| `GET /data/categories/{id}/courses` | Courses by category |
+| `GET /data/user-statuses` | User status options |
+| `GET /data/student-statuses` | Student status options |
+| `GET /data/lesson-types` | Lesson types (video, text, quiz) |
+| `GET /data/course-pricing-types` | Pricing types (free, paid) |
+| `GET /data/course-levels` | Levels (beginner, intermediate, advanced) |
+| `GET /data/course-filters` | All filter options combined |
+| `GET /data/video-config` | Video upload config |
+
+---
+
+## 3. Categories
+
+### List Categories
+
+```
+GET /categories
+```
+*Requires authentication*
+
+**Query Parameters:**
+| Param | Description |
+|-------|-------------|
+| `filter[category_name]` | Search by name |
+| `sort` | category_name, created_at |
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": 1,
+      "category_name": "Web Development",
+      "description": "...",
+      "icon": "code",
+      "image_url": "https://...",
+      "is_active": true,
+      "courses_count": 25
+    }
+  ]
+}
+```
+
+### Get Category
+
+```
+GET /categories/{id}
+```
+
+### Get Courses by Category
+
+```
+GET /categories/{id}/courses
+```
+
+**Query Parameters:**
+| Param | Description |
+|-------|-------------|
+| `filter[level]` | beginner, intermediate, advanced |
+| `filter[pricing_type]` | free, paid |
+| `filter[price_range]` | min,max (e.g., "50,100") |
+| `filter[is_featured]` | 1 or 0 |
+| `sort` | course_name, price, created_at |
+| `per_page` | Items per page (default: 20) |
+
+---
+
+## 4. Courses
+
+### List Courses
+
+```
+GET /courses
+```
+*Requires authentication*
+
+**Query Parameters:**
+| Param | Description |
+|-------|-------------|
+| `filter[category_id]` | Filter by category |
+| `filter[level]` | beginner, intermediate, advanced |
+| `filter[pricing_type]` | free, paid |
+| `filter[price_range]` | min,max (e.g., "50,100", "100,", ",50") |
+| `filter[is_featured]` | 1 or 0 |
+| `filter[search]` | Search in name, code, description |
+| `sort` | course_name, price, created_at, -created_at |
+| `per_page` | Items per page (default: 20) |
+
+**Example:**
+```
+GET /courses?filter[level]=beginner&filter[pricing_type]=free&sort=-created_at
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": 1,
+      "course_name": "Complete Laravel Course",
+      "course_code": "WEB-LAR-001",
+      "description": "...",
+      "image_url": "https://...",
+      "level": "beginner",
+      "duration_hours": 40,
+      "pricing_type": "paid",
+      "is_free": false,
+      "price": "99.99",
+      "instructor_name": "John Smith",
+      "is_featured": true,
+      "status": "published",
+      "category": {
+        "id": 1,
+        "category_name": "Web Development",
+        "image_url": "https://..."
+      },
+      "enrollments_count": 150,
+      "average_rating": 4.5,
+      "created_at": "2026-01-01T00:00:00Z"
+    }
+  ],
+  "pagination": { ... }
+}
+```
+
+### Get Course Details
+
+```
+GET /courses/{id}
+```
+
+**Response includes:**
+- Course info with category
+- Modules list (title, order, lessons count)
+- Enrollment status (if enrolled)
+- Reviews summary
+
+### Get Course Modules (Enrolled Only)
+
+```
+GET /courses/{id}/modules
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "course": {
+      "id": 1,
+      "course_name": "Complete Laravel Course",
+      "image_url": "https://..."
+    },
+    "enrollment": {
+      "id": 1,
+      "status": "active",
+      "progress_percentage": 65
+    },
     "modules": [
       {
         "id": 1,
@@ -521,12 +502,11 @@ Create a complete Laravel REST API for a Learning Management System (LMS) Mobile
             "lesson_title": "Introduction",
             "lesson_type": "video",
             "lesson_order": 1,
-            "description": "...",
             "duration_minutes": 15,
             "video_duration": "00:15:30",
             "is_mandatory": true,
-            "image_url": "/storage/lessons/image.jpg",
-            "video_url": "/storage/lessons/video.mp4",
+            "image_url": "https://...",
+            "video_url": "https://...",
             "progress": {
               "status": "completed",
               "progress_percentage": 100,
@@ -540,263 +520,529 @@ Create a complete Laravel REST API for a Learning Management System (LMS) Mobile
 }
 ```
 
+### Get Course Reviews
+
+```
+GET /courses/{id}/reviews
+```
+
+**Query Parameters:**
+| Param | Description |
+|-------|-------------|
+| `filter[rating]` | 1-5 |
+| `sort` | created_at, rating |
+
+### Submit Course Review
+
+```
+POST /courses/{id}/reviews
+```
+
+**Body:**
+```json
+{
+  "rating": 5,
+  "review_text": "Great course!",
+  "would_recommend": true
+}
+```
+
 ---
 
-## FILTER EXAMPLES:
+## 5. Reviews
 
-### Course Filters:
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/reviews` | GET | List your reviews |
+| `/reviews/{id}` | GET | Get review detail |
+| `/reviews/courses/{course}` | GET | Get course reviews |
+| `/reviews/courses/{course}` | POST | Create review |
+| `/reviews/{id}` | PUT | Update your review |
+| `/reviews/{id}` | DELETE | Delete your review |
+
+---
+
+## 6. Enrollments
+
+### List Enrollments
+
 ```
-GET /courses?filter[category_id]=1
+GET /enrollments
+```
+
+**Query Parameters:**
+| Param | Description |
+|-------|-------------|
+| `filter[status]` | active, completed, dropped |
+| `filter[payment_status]` | pending, paid |
+| `sort` | enrollment_date, progress_percentage |
+
+### Enroll in Course
+
+```
+POST /enrollments
+```
+
+**Body:**
+```json
+{
+  "course_id": 1
+}
+```
+
+### Get Enrollment Details
+
+```
+GET /enrollments/{id}
+```
+
+### Drop Enrollment
+
+```
+DELETE /enrollments/{id}
+```
+
+---
+
+## 7. Lessons
+
+### Get Lesson
+
+```
+GET /lessons/{id}
+```
+*Must be enrolled in course*
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "id": 1,
+    "lesson_title": "Introduction",
+    "lesson_type": "video",
+    "description": "...",
+    "content": "...",
+    "duration_minutes": 15,
+    "video_duration": "00:15:30",
+    "image_url": "https://...",
+    "video_url": "https://...",
+    "is_mandatory": true,
+    "quiz": null
+  }
+}
+```
+
+### Update Lesson Progress
+
+```
+POST /lessons/{id}/progress
+```
+
+**Body:**
+```json
+{
+  "status": "in_progress",
+  "progress_percentage": 50,
+  "time_spent_minutes": 10,
+  "video_last_position": 300,
+  "scroll_position": 500
+}
+```
+
+### Get Lesson Progress
+
+```
+GET /lessons/{id}/progress
+```
+
+---
+
+## 8. Lesson Progress
+
+| Endpoint | Description |
+|----------|-------------|
+| `GET /progress` | In-progress lessons |
+| `GET /progress/completed` | Completed lessons |
+| `GET /progress/courses/{courseId}` | Progress by course |
+| `GET /progress/lessons/{id}` | Specific lesson progress |
+| `PUT /progress/lessons/{id}` | Update progress |
+
+---
+
+## 9. Quizzes
+
+### Get Quiz
+
+```
+GET /quizzes/{id}
+```
+*Must be enrolled*
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "id": 1,
+    "quiz_title": "Module 1 Quiz",
+    "instructions": "...",
+    "time_limit_minutes": 30,
+    "passing_score": 70,
+    "max_attempts": 3,
+    "questions": [
+      {
+        "id": 1,
+        "question_text": "What is Laravel?",
+        "question_type": "multiple_choice",
+        "points": 1,
+        "image_url": null,
+        "options": [
+          { "id": 1, "option_text": "A PHP framework", "option_order": 1 },
+          { "id": 2, "option_text": "A database", "option_order": 2 }
+        ]
+      }
+    ]
+  }
+}
+```
+
+### Start Quiz Attempt
+
+```
+POST /quizzes/{id}/attempts
+```
+
+### Submit Quiz
+
+```
+PUT /quizzes/attempts/{id}
+```
+
+**Body:**
+```json
+{
+  "answers": [
+    { "question_id": 1, "selected_option_id": 1 },
+    { "question_id": 2, "selected_option_id": 5 }
+  ]
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "id": 1,
+    "score_percentage": 80,
+    "total_points": 8,
+    "max_points": 10,
+    "passed": true,
+    "time_taken_minutes": 15,
+    "answers": [...]
+  }
+}
+```
+
+### Get Quiz Attempt
+
+```
+GET /quizzes/attempts/{id}
+```
+
+### Get Attempts History
+
+```
+GET /quizzes/{id}/attempts
+```
+
+---
+
+## 10. Payments
+
+### List Payments
+
+```
+GET /payments
+```
+
+**Query Parameters:**
+| Param | Description |
+|-------|-------------|
+| `filter[status]` | pending, completed, failed, refunded |
+| `filter[payment_method]` | credit_card, debit_card, paypal, bank_transfer |
+| `sort` | payment_date, amount |
+
+### Create Payment
+
+```
+POST /payments
+```
+
+**Body:**
+```json
+{
+  "course_id": 1,
+  "payment_method": "credit_card",
+  "amount": 99.99
+}
+```
+
+### Get Payment
+
+```
+GET /payments/{id}
+```
+
+---
+
+## 11. Certificates
+
+### List Certificates
+
+```
+GET /certificates
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": 1,
+      "certificate_code": "CERT-2026-ABC123",
+      "issue_date": "2026-02-01",
+      "course": {
+        "id": 1,
+        "course_name": "Complete Laravel Course",
+        "image_url": "https://..."
+      }
+    }
+  ]
+}
+```
+
+### Get Certificate
+
+```
+GET /certificates/{id}
+```
+
+### Download Certificate (PDF)
+
+```
+GET /certificates/{id}/download
+```
+
+Returns PDF file stream.
+
+### Verify Certificate (Public)
+
+```
+GET /certificates/verify/{code}
+```
+
+---
+
+## 12. Notifications
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/notifications` | GET | List notifications |
+| `/notifications/{id}/read` | PUT | Mark as read |
+| `/notifications/read-all` | PUT | Mark all as read |
+| `/notifications/{id}` | DELETE | Delete notification |
+
+**Query Parameters for List:**
+| Param | Description |
+|-------|-------------|
+| `filter[type]` | info, success, warning, error, enrollment, completion |
+| `filter[is_read]` | 0 or 1 |
+| `sort` | created_at |
+
+---
+
+## 13. Dashboard
+
+### Get Stats
+
+```
+GET /dashboard/stats
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "enrolled_courses": 5,
+    "completed_courses": 2,
+    "in_progress_courses": 3,
+    "certificates": 2,
+    "total_learning_time_minutes": 1250,
+    "total_learning_time_hours": 20.8,
+    "average_progress": 65.5
+  }
+}
+```
+
+### Get Recent Activity
+
+```
+GET /dashboard/recent-activity
+```
+
+Returns last 10 lesson activities.
+
+### Get Activity Log
+
+```
+GET /dashboard/activity-log
+```
+
+Returns last 50 activities.
+
+### Continue Learning
+
+```
+GET /dashboard/continue-learning
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "enrollment_id": 1,
+      "progress_percentage": 65,
+      "last_accessed": "2026-02-04",
+      "course": {
+        "id": 1,
+        "course_name": "Complete Laravel Course",
+        "image_url": "https://..."
+      },
+      "next_lesson": {
+        "id": 5,
+        "lesson_title": "Database Migrations",
+        "lesson_type": "video"
+      }
+    }
+  ]
+}
+```
+
+---
+
+## 14. Videos
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/videos/config` | GET | Upload configuration |
+| `/videos/list` | GET | List uploaded videos |
+| `/videos/upload` | POST | Upload video |
+| `/videos/metadata` | POST | Get video metadata |
+| `/videos/delete` | DELETE | Delete video |
+| `/videos/lessons/{id}/upload` | POST | Upload for lesson |
+| `/videos/lessons/{id}` | DELETE | Delete from lesson |
+| `/videos/lessons/{id}/stream` | GET | Stream video |
+
+---
+
+## Filtering & Sorting
+
+### Filter Syntax
+
+```
+GET /endpoint?filter[field]=value
+```
+
+### Examples
+
+```
+# Single filter
 GET /courses?filter[level]=beginner
-GET /courses?filter[pricing_type]=free
-GET /courses?filter[pricing_type]=paid
-GET /courses?filter[price_range]=50,100
-GET /courses?filter[price_range]=100,
-GET /courses?filter[price_range]=,50
-GET /courses?filter[is_featured]=1
+
+# Multiple filters
+GET /courses?filter[level]=beginner&filter[pricing_type]=free
+
+# Price range
+GET /courses?filter[price_range]=50,100    # Between 50 and 100
+GET /courses?filter[price_range]=100,      # 100 or more
+GET /courses?filter[price_range]=,50       # 50 or less
+
+# Search
 GET /courses?filter[search]=laravel
 ```
 
-### Combined Filters:
+### Sort Syntax
+
 ```
-GET /courses?filter[category_id]=1&filter[level]=beginner&filter[pricing_type]=free
-GET /courses?filter[price_range]=50,100&filter[is_featured]=1&sort=-created_at
-GET /courses?filter[search]=laravel&filter[level]=intermediate&per_page=10
+GET /endpoint?sort=field          # Ascending
+GET /endpoint?sort=-field         # Descending (prefix with -)
 ```
 
-### Sorting:
+### Examples
+
 ```
-GET /courses?sort=price           # Price ascending
-GET /courses?sort=-price          # Price descending
-GET /courses?sort=course_name     # Name A-Z
+GET /courses?sort=price           # Price low to high
+GET /courses?sort=-price          # Price high to low
 GET /courses?sort=-created_at     # Newest first
 ```
 
----
+### Pagination
 
-## MODELS (with Spatie traits):
-
-**User model:**
-- Use HasMediaTrait (for profile_picture)
-- Use LogsActivity trait
-- Media collections: 'profile_picture' (max 2MB, convert to 500x500)
-- Activity log all changes
-
-**Student model:**
-- Use LogsActivity trait
-- Activity log for status changes
-
-**Course model:**
-- Use HasMediaTrait (for thumbnail)
-- Use LogsActivity trait
-- Media collections: 'thumbnail' (convert to 800x600, 400x300, 200x150)
-- Activity log for view, enroll actions
-
-**Lesson model:**
-- Use HasMediaTrait (for video, documents, thumbnail)
-- Use LogsActivity trait
-- Media collections: 'video' (max 500MB), 'documents', 'thumbnail' (convert to 400x300)
-- Activity log for view, complete actions
-
-**QuizQuestion model:**
-- Use HasMediaTrait (for question_image)
-- Media collections: 'question_image' (max 1MB, convert to 800x600)
-
-**Quiz model:**
-- Use LogsActivity trait
-- Activity log for attempts
-
-**Enrollment model:**
-- Use LogsActivity trait
-- Activity log for status changes
-
-**Certificate model:**
-- Use HasMediaTrait (for certificate PDF)
-- Use LogsActivity trait
-- Media collections: 'certificate' (PDF)
-- Activity log for issue, download
-
-**Payment model:**
-- Use LogsActivity trait
-- Activity log for all payment actions
-
-**CourseReview model:**
-- Use LogsActivity trait
-- Activity log for create, update, delete
+```
+GET /endpoint?per_page=10&page=2
+```
 
 ---
 
-## API CONTROLLERS (app/Http/Controllers/Api/):
+## Error Handling
 
-**AuthController:**
-- register (with media upload)
-- login (log activity)
-- profile (include media URLs)
-- updateProfile (handle media upload)
-- changePassword (log activity)
-- logout (log activity)
+### Validation Error (422)
+```json
+{
+  "success": false,
+  "message": "Validation failed",
+  "errors": {
+    "email": ["The email field is required."],
+    "password": ["The password must be at least 8 characters."]
+  }
+}
+```
 
-**DataController:**
-- index (all dropdown options)
-- categories, courses, coursesByCategory
-- userStatuses, studentStatuses
-- lessonTypes, coursePricingTypes, courseLevels
-- courseFilters (combined)
+### Unauthorized (401)
+```json
+{
+  "success": false,
+  "message": "Unauthenticated"
+}
+```
 
-**CategoryController:**
-- index (use QueryBuilder)
-- show
-- courses (use QueryBuilder with pagination)
+### Forbidden (403)
+```json
+{
+  "success": false,
+  "message": "You are not enrolled in this course"
+}
+```
 
-**CourseController:**
-- index (use QueryBuilder with filters including price_range, pricing_type)
-- show (include media URLs, check enrollment, include pricing_type, is_free)
-- modules (verify enrollment, include media URLs)
-- reviews (use QueryBuilder)
-- storeReview (log activity)
-
-**CourseReviewController:**
-- index, show, byCourse
-- store, update, destroy (log activity)
-
-**EnrollmentController:**
-- index (use QueryBuilder, include media URLs, pricing_type, is_free)
-- store (log activity, verify limits)
-- show (include all media URLs)
-- destroy (log activity)
-
-**LessonController:**
-- show (include all media URLs, verify enrollment)
-- updateProgress (log activity, update enrollment progress)
-- getProgress
-
-**LessonProgressController:**
-- index, completed, byCourse
-- show, update
-
-**VideoController:**
-- config, list
-- upload, metadata, destroy
-- uploadForLesson, destroyFromLesson, stream
-
-**QuizController:**
-- show (include question image URLs, verify enrollment)
-- startAttempt (log activity)
-- submitAttempt (calculate score, log activity)
-- getAttempt (include image URLs)
-- getAttempts (use QueryBuilder)
-
-**PaymentController:**
-- index (use QueryBuilder, include media URLs)
-- store (log activity, verify amount)
-- show (include media URLs)
-
-**CertificateController:**
-- index (include PDF URLs, media URLs)
-- show (include PDF URL)
-- download (stream PDF from media library)
-- verify (public, include PDF URL)
-
-**NotificationController:**
-- index (use QueryBuilder)
-- markAsRead
-- markAllAsRead
-- destroy
-
-**DashboardController:**
-- stats
-- recentActivity (include media URLs)
-- activityLog (use Spatie Activity Log with QueryBuilder)
-- continueLearning
+### Not Found (404)
+```json
+{
+  "success": false,
+  "message": "Course not found"
+}
+```
 
 ---
 
-## CUSTOM FILTERS:
+## Rate Limiting
 
-**PriceRangeFilter (App\Filters\PriceRangeFilter):**
-- Filter courses by price range
-- Format: "min,max" (e.g., "50,100")
-- Supports: min only ("100,"), max only (",50"), or both ("50,100")
+- **Authenticated:** 60 requests/minute
+- **Unauthenticated:** 30 requests/minute
 
-**UniversalSearchFilter (App\Filters\UniversalSearchFilter):**
-- Search across multiple fields
-- Supports relationship fields with dot notation
-
----
-
-## MEDIA HANDLING:
-- All file uploads use Spatie Media Library
-- Profile pictures: convert to 500x500, 200x200
-- Course thumbnails: convert to 800x600, 400x300, 200x150 (responsive images)
-- Lesson thumbnails: convert to 400x300, 200x150
-- Lesson videos: store original, max 500MB
-- Question images: convert to 800x600, 400x300
-- Certificate PDFs: store original
-- All images: optimize for web
-- Return URLs with conversions: getUrl('thumbnail-name')
-- Use image_url field name consistently across all responses
-
----
-
-## ACTIVITY LOGGING:
-- Log all student actions: login, logout, register, enroll, complete lesson, take quiz, make payment, etc.
-- Use Spatie Activity Log with custom properties
-- Store student_id, course_id, lesson_id in properties
-- Example: activity()->log('Enrolled in course')->properties(['course_id' => $courseId, 'student_id' => $studentId])
-
----
-
-## QUERY BUILDER USAGE:
-- Use allowedFilters() for all filterable endpoints
-- Use allowedSorts() for all sortable endpoints
-- Use allowedIncludes() for relationship loading
-- Example: QueryBuilder::for(Course::class)->allowedFilters(['level', 'category_id', 'pricing_type', AllowedFilter::custom('price_range', new PriceRangeFilter())])->allowedSorts('price', 'created_at')->get()
-
----
-
-## SECURITY:
-- Rate limiting: 60 requests per minute for authenticated users
-- Input sanitization
-- Only show published courses
-- Students can only access their own data
-- Verify enrollment before accessing course content
-- Validate file uploads (mime types, sizes)
-- Use Sanctum abilities for token scoping
-
----
-
-## VALIDATION:
-- Validate all inputs
-- File upload validation: mime types, max sizes
-- Use Form Request classes for complex validation
-
----
-
-## ERROR HANDLING:
-- Try-catch blocks for all operations
-- Proper HTTP status codes
-- Return media-specific errors (upload failed, file not found, etc.)
-
----
-
-## FEATURES:
-- Student self-registration with profile picture
-- Advanced filtering and sorting with Spatie Query Builder
-- Price range filtering for courses
-- Free/Paid course filtering
-- File uploads and management with Spatie Media Library
-- Automatic image optimization and responsive images
-- Video streaming
-- Activity tracking with Spatie Activity Log
-- Certificate PDF generation and download
-- Course browsing with thumbnails
-- Lesson video playback with progress tracking
-- Quiz with images
-- Payment processing
-- Notifications
-
-Use Spatie packages for all file handling, query building, and activity logging.
-Follow Laravel API best practices.
-Use proper RESTful conventions.
-Include pagination for all list endpoints.
-Always include media URLs in API responses using image_url field name.
+When exceeded, returns `429 Too Many Requests`.
